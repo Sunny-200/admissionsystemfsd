@@ -89,6 +89,7 @@ const getApplicationsWithAssignments = async () => {
 
   return applications.map((app) => ({
     ...app,
+    email: app.user?.email || null,
     createdAt: app.createdAt.toISOString(),
     assignedVerifier: map.get(app.id) || null,
   }));
