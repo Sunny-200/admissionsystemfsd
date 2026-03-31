@@ -96,7 +96,7 @@ model StudentProfile {
     name          String
     dateOfBirth   DateTime
     contactNumber String
-    aadharNumber  String   @unique
+    aadharNumber  String
     bloodGroup    String?
 
     // Guardian Information

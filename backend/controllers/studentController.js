@@ -80,19 +80,11 @@ const submitApplicationController = async (req, res) => {
 
     if (
       error.message === 'Missing required fields' ||
-      error.message === 'Application already submitted' ||
-      error.message === 'Aadhar number already registered'
+      error.message === 'Application already submitted'
     ) {
       return res.status(400).json({
         success: false,
         message: error.message,
-      });
-    }
-
-    if (error?.code === 'P2002' && error?.meta?.target?.includes('aadharNumber')) {
-      return res.status(400).json({
-        success: false,
-        message: 'Aadhar number already registered',
       });
     }
 

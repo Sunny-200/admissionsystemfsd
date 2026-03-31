@@ -12,6 +12,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const latestVerifierRemark = remarks.find((r) => r.author?.role === "VERIFIER");
+
   // 🔐 Redirect based on role
   useEffect(() => {
     if (!user) {
@@ -127,6 +129,21 @@ export default function Dashboard() {
           </div>
           <p className="text-sm mt-2 md:mt-0 text-white">Welcome, {profile.name}</p>
         </div>
+
+        {(profile.applicationStatus === "REJECTED" || profile.applicationStatus === "DOCUMENTS_REJECTED") && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-5 mb-6">
+            <p className="text-sm font-semibold text-red-700">Your application was rejected</p>
+            <p className="text-sm text-red-600 mt-1">
+              {latestVerifierRemark?.text || "No verifier remarks available yet."}
+            </p>
+            <button
+              onClick={() => navigate("/register")}
+              className="mt-4 bg-[#1e3a8a] text-white hover:bg-[#172554] rounded-md px-4 py-2 text-sm font-medium"
+            >
+              Resubmit Application
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">

@@ -12,8 +12,9 @@ export default function VerifierApplicationDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [comments, setComments] = useState("");
-  const [status, setStatus] = useState("PENDING");
+  const [status, setStatus] = useState("VERIFIED");
   const [submitting, setSubmitting] = useState(false);
+  const allowedStatuses = ["VERIFIED", "REJECTED"];
 
   // 🔐 auth protect
   useEffect(() => {
@@ -27,8 +28,10 @@ export default function VerifierApplicationDetail() {
     const fetchApplication = async () => {
       try {
         const res = await API.get(`/verifier/applications/${id}`);
-        setApplication(res.data.data.application);
-        setStatus(res.data.data.application?.applicationStatus || "PENDING");
+        const app = res.data.data.application;
+        setApplication(app);
+        const currentStatus = app?.applicationStatus || "VERIFIED";
+        setStatus(allowedStatuses.includes(currentStatus) ? currentStatus : "VERIFIED");
       } catch (err) {
         console.error(err);
         setError("Failed to load application details");
@@ -44,6 +47,10 @@ export default function VerifierApplicationDetail() {
 
   const handleSubmitVerification = async (e) => {
     e.preventDefault();
+    if (!allowedStatuses.includes(status)) {
+      setError("Please select a valid verification status");
+      return;
+    }
     setSubmitting(true);
 
     try {
@@ -56,9 +63,16 @@ export default function VerifierApplicationDetail() {
       navigate("/verifier");
     } catch (err) {
       console.error(err);
-      setError("Failed to submit verification");
+      setError(err.response?.data?.message || "Failed to submit verification");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleViewDocument = (doc) => {
+    const url = doc?.viewUrl || doc?.fileUrl;
+    if (url) {
+      window.open(url, "_blank");
     }
   };
 
@@ -234,6 +248,27 @@ export default function VerifierApplicationDetail() {
               <label className="text-sm font-medium text-gray-700">Address</label>
               <p className="text-sm text-gray-700">{application.permanentAddress}</p>
             </div>
+          </div>
+        </div>
+
+        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6 mb-6">
+          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
+            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+              Documents
+            </p>
+          </div>
+          <div className="space-y-3">
+            {(application.documents || []).map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">{doc.documentType}</span>
+                <button
+                  onClick={() => handleViewDocument(doc)}
+                  className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2 text-sm"
+                >
+                  View
+                </button>
+              </div>
+            ))}
           </div>
         </div>
 
