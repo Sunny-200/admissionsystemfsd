@@ -1,20 +1,13 @@
 import { z } from "zod";
 
 export const basicInfoSchema = z.object({
-  firstName: z
+  name: z
     .string()
-    .min(2, { message: "First name must be at least 2 characters" })
-    .max(50, { message: "First name must not exceed 50 characters" }),
-  lastName: z
+    .min(2, { message: "Name must be at least 2 characters" })
+    .max(100, { message: "Name must not exceed 100 characters" }),
+  contactNumber: z
     .string()
-    .min(2, { message: "Last name must be at least 2 characters" })
-    .max(50, { message: "Last name must not exceed 50 characters" }),
-  email: z
-    .string()
-    .email({ message: "Invalid email address" }),
-  phone: z
-    .string()
-    .regex(/^[0-9]{10}$/, { message: "Phone number must be 10 digits" }),
+    .regex(/^[0-9]{10}$/, { message: "Contact number must be 10 digits" }),
   dateOfBirth: z
     .string()
     .refine(
@@ -26,65 +19,51 @@ export const basicInfoSchema = z.object({
       },
       { message: "Age must be between 16 and 100 years" }
     ),
-  gender: z
-    .enum(["Male", "Female", "Other"], {
-      message: "Please select a valid gender",
+  guardianName: z
+    .string()
+    .min(2, { message: "Guardian name must be at least 2 characters" })
+    .max(100, { message: "Guardian name must not exceed 100 characters" }),
+  guardianNumber: z
+    .string()
+    .regex(/^[0-9]{10}$/, { message: "Guardian number must be 10 digits" }),
+  guardianEmail: z
+    .string()
+    .email({ message: "Invalid guardian email" }),
+});
+
+export const academicInfoSchema = z.object({
+  aadharNumber: z
+    .string()
+    .regex(/^[0-9]{12}$/, { message: "Aadhar number must be 12 digits" }),
+  religion: z
+    .string()
+    .min(2, { message: "Religion must be at least 2 characters" })
+    .max(50, { message: "Religion must not exceed 50 characters" }),
+  casteCategory: z
+    .enum(["GENERAL", "GENERAL_EWS", "OBC_NCL", "SC", "ST"], {
+      message: "Please select a valid caste category",
     }),
-  address: z
+  branchAllotted: z
+    .string()
+    .min(2, { message: "Branch must be at least 2 characters" }),
+  seatAllotmentSource: z
+    .enum(["JOSSA", "CSAB"], {
+      message: "Please select a valid allotment source",
+    }),
+  bloodGroup: z
+    .string()
+    .max(5, { message: "Blood group must not exceed 5 characters" })
+    .optional(),
+  permanentAddress: z
     .string()
     .min(5, { message: "Address must be at least 5 characters" })
-    .max(100, { message: "Address must not exceed 100 characters" }),
-  city: z
-    .string()
-    .min(2, { message: "City must be at least 2 characters" })
-    .max(50, { message: "City must not exceed 50 characters" }),
+    .max(200, { message: "Address must not exceed 200 characters" }),
   state: z
     .string()
     .min(2, { message: "State must be at least 2 characters" })
     .max(50, { message: "State must not exceed 50 characters" }),
-  zipCode: z
+  remarksFromStudent: z
     .string()
-    .regex(/^[0-9]{6}$/, { message: "Zip code must be 6 digits" }),
-});
-
-export const academicInfoSchema = z.object({
-  highSchoolName: z
-    .string()
-    .min(3, { message: "High school name must be at least 3 characters" })
-    .max(100, { message: "High school name must not exceed 100 characters" }),
-  highSchoolBoard: z
-    .enum(["CBSE", "ICSE", "State Board", "International", "Other"], {
-      message: "Please select a valid board",
-    }),
-  passingYear: z
-    .string()
-    .refine(
-      (year) => {
-        const currentYear = new Date().getFullYear();
-        const passYear = parseInt(year);
-        return passYear >= currentYear - 5 && passYear <= currentYear;
-      },
-      { message: "Passing year must be within the last 5 years" }
-    ),
-  cgpa: z
-    .string()
-    .refine(
-      (cgpa) => {
-        const score = parseFloat(cgpa);
-        return score >= 0 && score <= 10;
-      },
-      { message: "CGPA must be between 0 and 10" }
-    ),
-  subjects: z
-    .array(z.string())
-    .min(3, { message: "Please select at least 3 subjects" })
-    .max(6, { message: "Please select at most 6 subjects" }),
-  preferredStream: z
-    .enum(["Science", "Commerce", "Arts", "Others"], {
-      message: "Please select a valid stream",
-    }),
-  achievements: z
-    .string()
-    .max(500, { message: "Achievements must not exceed 500 characters" })
+    .max(500, { message: "Remarks must not exceed 500 characters" })
     .optional(),
 });

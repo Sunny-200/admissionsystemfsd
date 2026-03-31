@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -20,60 +20,65 @@ export default function Home() {
   }, [user, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 py-12">
-      <div className="text-center max-w-3xl">
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold text-blue-900 mb-4">
-            IIIT Dharwad Admission System
-          </h1>
-          <p className="text-xl text-gray-700 mb-8">
-            A centralized platform for managing student admissions, verifications, and assignments
-          </p>
-        </div>
+    <div className="min-h-screen bg-app-background">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
+        <h1 className="text-2xl md:text-3xl font-semibold text-app-primary">
+          IIIT Dharwad Admission Portal
+        </h1>
+        <p className="text-sm text-app-muted mt-1 mb-6">
+          A centralized system for admissions, verification, and assignments
+        </p>
 
-        <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="text-4xl mb-4">👥</div>
-            <h3 className="text-xl font-semibold text-blue-900 mb-2">For Students</h3>
-            <p className="text-gray-600">
-              Register for admission, view your application status, and track progress
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
+            <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
+              <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+                For Students
+              </p>
+            </div>
+            <p className="text-sm text-gray-700">
+              Register for admission, submit documents, and track application status.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="text-4xl mb-4">⚙️</div>
-            <h3 className="text-xl font-semibold text-blue-900 mb-2">For Admins</h3>
-            <p className="text-gray-600">
-              Manage applications, assign verifiers, and oversee the entire admission process
+          <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
+            <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
+              <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+                For Admins
+              </p>
+            </div>
+            <p className="text-sm text-gray-700">
+              Review applications, assign verifiers, and monitor progress.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="text-4xl mb-4">✓</div>
-            <h3 className="text-xl font-semibold text-blue-900 mb-2">For Verifiers</h3>
-            <p className="text-gray-600">
-              Verify student information and approve applications efficiently
+          <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
+            <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
+              <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+                For Verifiers
+              </p>
+            </div>
+            <p className="text-sm text-gray-700">
+              Verify documents, approve or reject applications, and submit remarks.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            to="/login"
-            className="bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg px-8 py-3 transition shadow-lg"
-          >
-            Sign In
-          </Link>
-          <Link
-            to="/signup"
-            className="border-2 border-blue-700 text-blue-700 hover:bg-blue-50 font-semibold rounded-lg px-8 py-3 transition"
-          >
-            Create Account
-          </Link>
-        </div>
-
-        <div className="mt-12 text-gray-600 text-sm">
-          <p>© 2026 IIIT Dharwad. All rights reserved.</p>
+        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              to="/login"
+              className="bg-[#1e3a8a] text-white hover:bg-[#172554] rounded-md px-4 py-2 text-sm font-medium"
+            >
+              Sign In
+            </Link>
+            <Link
+              to="/signup"
+              className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2"
+            >
+              Create Account
+            </Link>
+          </div>
         </div>
       </div>
     </div>

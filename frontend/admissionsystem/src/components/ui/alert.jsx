@@ -22,7 +22,7 @@ export function Alert({ message, type, duration = 2500, onClose }) {
     }, 50);
 
     return () => clearInterval(intervalRef.current);
-  }, [message]);
+  }, [message, duration, onClose]);
 
   if (!message) return null;
 

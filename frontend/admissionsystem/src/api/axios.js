@@ -1,10 +1,11 @@
 import axios from "axios";
 
+// Centralized Axios instance for all API calls
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "http://localhost:5001/api",
 });
 
-// attach token
+// Attach JWT token (if available) to every request
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {

@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 import API from "../api/axios";
+import { BasicInfoForm } from "../components/registration/BasicInfoForm";
+import { AcademicInfoForm } from "../components/registration/AcademicInfoForm";
+import { DocumentUploadForm } from "../components/registration/DocumentUploadForm";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,10 +23,11 @@ export default function Register() {
   const [alert, setAlert] = useState("");
 
   // 🔐 redirect if not logged in
-  if (!user) {
-    navigate("/login");
-    return null;
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
 
   // Step 1
   const basicForm = useForm({
@@ -55,7 +59,7 @@ export default function Register() {
       };
 
       // 🔥 API call
-      const res = await API.post("/student/application", payload);
+      await API.post("/student/application", payload);
 
       setAlert("Application submitted successfully");
 
@@ -65,40 +69,50 @@ export default function Register() {
     }
   };
 
+  if (!user) return null;
+
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="min-h-screen bg-app-background">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
+        <h1 className="text-2xl md:text-3xl font-semibold text-app-primary">
+          Student Registration
+        </h1>
+        <p className="text-sm text-app-muted mt-1 mb-6">Step {step} of 3</p>
 
-      <h1>Student Registration</h1>
-      <p>Step {step} of 3</p>
+        {alert && <p className="text-green-600 text-sm mb-4">{alert}</p>}
 
-      {alert && <p>{alert}</p>}
+        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
+          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
+            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+              Registration Form
+            </p>
+          </div>
 
-      {/* Step 1 */}
-      {step === 1 && (
-        <form onSubmit={basicForm.handleSubmit(handleBasic)}>
-          <input {...basicForm.register("name")} placeholder="Name" />
-          <button type="submit">Next</button>
-        </form>
-      )}
+          {/* Step 1 */}
+          {step === 1 && (
+            <BasicInfoForm form={basicForm} onSubmit={handleBasic} />
+          )}
 
-      {/* Step 2 */}
-      {step === 2 && (
-        <form onSubmit={academicForm.handleSubmit(handleAcademic)}>
-          <input {...academicForm.register("aadharNumber")} placeholder="Aadhar" />
-          <button type="button" onClick={() => setStep(1)}>Back</button>
-          <button type="submit">Next</button>
-        </form>
-      )}
+          {/* Step 2 */}
+          {step === 2 && (
+            <AcademicInfoForm
+              form={academicForm}
+              onSubmit={handleAcademic}
+              onBack={() => setStep(1)}
+            />
+          )}
 
-      {/* Step 3 */}
-      {step === 3 && (
-        <div>
-          {/* You plug your DocumentUploadForm here */}
-          <button onClick={() => handleSubmit({ AADHAR_CARD: "file-url" })}>
-            Submit Application
-          </button>
+          {/* Step 3 */}
+          {step === 3 && (
+            <div className="mt-4">
+              <DocumentUploadForm
+                onBack={() => setStep(2)}
+                onSubmit={handleSubmit}
+              />
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

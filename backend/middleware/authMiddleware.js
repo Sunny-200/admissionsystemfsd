@@ -4,7 +4,10 @@ const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized',
+    });
   }
 
   const token = authHeader.split(' ')[1];
@@ -14,7 +17,10 @@ const verifyToken = (req, res, next) => {
     req.user = decoded; // { id, role }
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid token' });
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid token',
+    });
   }
 };
 

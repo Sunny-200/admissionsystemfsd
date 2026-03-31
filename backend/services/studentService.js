@@ -57,6 +57,15 @@ const submitApplication = async (userId, data) => {
     throw new Error('Missing required fields');
   }
 
+  const existingAadhar = await prisma.studentProfile.findUnique({
+    where: { aadharNumber: data.aadharNumber },
+    select: { id: true },
+  });
+
+  if (existingAadhar) {
+    throw new Error('Aadhar number already registered');
+  }
+
   // Check existing profile
   const existingProfile = await prisma.studentProfile.findUnique({
     where: { userId },
@@ -93,12 +102,20 @@ const submitApplication = async (userId, data) => {
     // Documents
     const documentPromises = Object.entries(data.documentUrls).map(
       ([docType, fileUrl]) => {
+        const rawName = fileUrl.split('/').pop() || 'unknown';
+        let decodedName = rawName;
+        try {
+          decodedName = decodeURIComponent(rawName);
+        } catch {
+          decodedName = rawName;
+        }
+
         return tx.document.create({
           data: {
             studentProfileId: profile.id,
             documentType: docType,
             fileUrl,
-            fileName: fileUrl.split('/').pop() || 'unknown',
+            fileName: decodedName,
             status: 'PENDING',
             version: 1,
           },

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 
 import ApplicationDetail from "../components/admin/ApplicationDetail";
 
@@ -19,8 +19,16 @@ export default function ApplicationDetailPage() {
   }
 
   return (
-    <div className="p-6">
-      <ApplicationDetail applicationId={id} />
+    <div className="min-h-screen bg-app-background">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
+        <h1 className="text-2xl md:text-3xl font-semibold text-app-primary">
+          Application Detail
+        </h1>
+        <p className="text-sm text-app-muted mt-1 mb-6">
+          Review submitted application and documents
+        </p>
+        <ApplicationDetail applicationId={id} />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/axios";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 
 export default function VerifierApplicationDetail() {
   const { id } = useParams();
@@ -27,8 +27,8 @@ export default function VerifierApplicationDetail() {
     const fetchApplication = async () => {
       try {
         const res = await API.get(`/verifier/applications/${id}`);
-        setApplication(res.data.application);
-        setStatus(res.data.application?.verificationStatus || "PENDING");
+        setApplication(res.data.data.application);
+        setStatus(res.data.data.application?.applicationStatus || "PENDING");
       } catch (err) {
         console.error(err);
         setError("Failed to load application details");
@@ -47,7 +47,8 @@ export default function VerifierApplicationDetail() {
     setSubmitting(true);
 
     try {
-      const res = await API.post(`/verifier/applications/${id}/verify`, {
+      await API.post(`/verifier/review`, {
+        applicationId: id,
         status,
         comments,
       });
@@ -62,61 +63,96 @@ export default function VerifierApplicationDetail() {
   };
 
   if (loading) {
-    return <div className="p-6 text-center">Loading application details...</div>;
+    return (
+      <div className="min-h-screen bg-app-background">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
+          <p className="text-sm text-app-muted">Loading application details...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="page-container">
-        <div className="bg-red-100 text-red-700 p-4 rounded">{error}</div>
-        <button
-          onClick={() => navigate("/verifier")}
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Back to Dashboard
-        </button>
+      <div className="min-h-screen bg-app-background">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
+          <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
+            <p className="text-red-600 text-sm">{error}</p>
+            <button
+              onClick={() => navigate("/verifier")}
+              className="mt-4 border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!application) {
-    return <div className="p-6 text-center">Application not found</div>;
+    return (
+      <div className="min-h-screen bg-app-background">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
+          <p className="text-sm text-app-muted">Application not found</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="page-container">
-      <div className="card-base p-6 mb-6">
-        <button
-          onClick={() => navigate("/verifier")}
-          className="mb-4 text-blue-600 hover:text-blue-800"
-        >
-          ← Back to Dashboard
-        </button>
-
-        <h1 className="text-3xl font-bold mb-4">
-          Application Details - {application.firstName} {application.lastName}
-        </h1>
-
-        <div className="grid grid-cols-2 gap-6 mb-8">
+    <div className="min-h-screen bg-app-background">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <label className="font-semibold text-gray-700">Student ID:</label>
-            <p>{application.studentId}</p>
+            <h1 className="text-2xl md:text-3xl font-semibold text-app-primary">
+              Application Details
+            </h1>
+            <p className="text-sm text-app-muted mt-1">
+              Review and verify submitted application
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/verifier")}
+            className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2"
+          >
+            Back
+          </button>
+        </div>
+
+        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6 mb-6">
+          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
+            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+              Applicant Overview
+            </p>
+          </div>
+          <h2 className="text-xl font-semibold text-app-primary">
+            {application.name}
+          </h2>
+          <p className="text-sm text-app-muted mt-1">
+            Application ID: {application.id}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          <div>
+            <label className="font-semibold text-gray-700">Application ID:</label>
+            <p>{application.id}</p>
           </div>
           <div>
             <label className="font-semibold text-gray-700">Email:</label>
-            <p>{application.email}</p>
+            <p>{application.user?.email}</p>
           </div>
           <div>
             <label className="font-semibold text-gray-700">Phone:</label>
-            <p>{application.phone}</p>
+            <p>{application.contactNumber}</p>
           </div>
           <div>
             <label className="font-semibold text-gray-700">Date of Birth:</label>
-            <p>{application.dateOfBirth}</p>
+            <p>{new Date(application.dateOfBirth).toDateString()}</p>
           </div>
           <div>
-            <label className="font-semibold text-gray-700">Gender:</label>
-            <p>{application.gender}</p>
+            <label className="font-semibold text-gray-700">Aadhar:</label>
+            <p>{application.aadharNumber}</p>
           </div>
           <div>
             <label className="font-semibold text-gray-700">
@@ -124,12 +160,12 @@ export default function VerifierApplicationDetail() {
             </label>
             <p>
               <span
-                className={`px-3 py-1 rounded text-sm font-medium ${
-                  application.applicationStatus === "APPROVED"
-                    ? "bg-green-100 text-green-800"
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  application.applicationStatus === "VERIFIED"
+                    ? "bg-green-100 text-green-700"
                     : application.applicationStatus === "REJECTED"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-yellow-100 text-yellow-800"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-yellow-100 text-yellow-700"
                 }`}
               >
                 {application.applicationStatus}
@@ -138,85 +174,107 @@ export default function VerifierApplicationDetail() {
           </div>
         </div>
 
-        <div className="border-t pt-6">
-          <h2 className="text-xl font-bold mb-4">Academic Information</h2>
-          <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4"></div>
+        </div>
+        </div>
+
+        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6 mb-6">
+          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
+            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+              Academic Information
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="font-semibold text-gray-700">
-                High School:
-              </label>
-              <p>{application.highSchoolName}</p>
+              <label className="text-sm font-medium text-gray-700">Branch Allotted</label>
+              <p className="text-sm text-gray-700">{application.branchAllotted}</p>
             </div>
             <div>
-              <label className="font-semibold text-gray-700">Board:</label>
-              <p>{application.highSchoolBoard}</p>
-            </div>
-            <div>
-              <label className="font-semibold text-gray-700">Passing Year:</label>
-              <p>{application.passingYear}</p>
-            </div>
-            <div>
-              <label className="font-semibold text-gray-700">CGPA:</label>
-              <p>{application.cgpa}</p>
-            </div>
-            <div>
-              <label className="font-semibold text-gray-700">Subjects:</label>
-              <p>{application.subjects?.join(", ")}</p>
-            </div>
-            <div>
-              <label className="font-semibold text-gray-700">
-                Preferred Stream:
-              </label>
-              <p>{application.preferredStream}</p>
+              <label className="text-sm font-medium text-gray-700">Seat Allotment Source</label>
+              <p className="text-sm text-gray-700">{application.seatAllotmentSource}</p>
             </div>
           </div>
         </div>
 
-        {application.achievements && (
-          <div className="border-t pt-6 mt-6">
-            <h2 className="text-xl font-bold mb-4">Achievements</h2>
-            <p>{application.achievements}</p>
+        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6 mb-6">
+          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
+            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+              Guardian Details
+            </p>
           </div>
-        )}
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Name</label>
+              <p className="text-sm text-gray-700">{application.guardianName}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Phone</label>
+              <p className="text-sm text-gray-700">{application.guardianNumber}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Email</label>
+              <p className="text-sm text-gray-700">{application.guardianEmail}</p>
+            </div>
+          </div>
+        </div>
 
-      <div className="card-base p-6">
-        <h2 className="text-2xl font-bold mb-4">Verification Form</h2>
+        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6 mb-6">
+          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
+            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+              Address
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="text-sm font-medium text-gray-700">State</label>
+              <p className="text-sm text-gray-700">{application.state}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Address</label>
+              <p className="text-sm text-gray-700">{application.permanentAddress}</p>
+            </div>
+          </div>
+        </div>
 
-        <form onSubmit={handleSubmitVerification}>
-          <div className="mb-6">
-            <label className="block font-semibold mb-2">
-              Verification Status
-            </label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full border rounded px-3 py-2"
+        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
+          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
+            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+              Verification Form
+            </p>
+          </div>
+          <form onSubmit={handleSubmitVerification} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Verification Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-md px-3 py-2 w-full"
+              >
+                <option value="VERIFIED">Verified</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700">Comments</label>
+              <textarea
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-md px-3 py-2 w-full h-32"
+                placeholder="Add verification comments..."
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="bg-[#1e3a8a] text-white hover:bg-[#172554] rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
             >
-              <option value="PENDING">Pending</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-            </select>
-          </div>
-
-          <div className="mb-6">
-            <label className="block font-semibold mb-2">Comments</label>
-            <textarea
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
-              className="w-full border rounded px-3 py-2 h-32"
-              placeholder="Add verification comments..."
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-medium disabled:opacity-50"
-          >
-            {submitting ? "Submitting..." : "Submit Verification"}
-          </button>
-        </form>
+              {submitting ? "Submitting..." : "Submit Verification"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
