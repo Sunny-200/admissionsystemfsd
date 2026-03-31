@@ -1,0 +1,4 @@
+.backend/node_modules
+.backend/.env
+.frontend/admissionsystem/node_modules
+.frontend/admissionsystem/.env

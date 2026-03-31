@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+/* ================= ROOT VARIABLES ================= */
+:root {
+  --radius: 0.625rem;
+
+  /* Colors */
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+
+  --primary: #1d4ed8;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f3f4f6;
+  --secondary-foreground: #111827;
+
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+
+  --accent: #f3f4f6;
+  --accent-foreground: #111827;
+
+  --destructive: #dc2626;
+
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #9ca3af;
+
+  /* App Tokens */
+  --app-background: #f3f4f6;
+  --app-card: #ffffff;
+  --app-primary: #1d4ed8;
+  --app-primary-light: #eff6ff;
+  --app-border: #e5e7eb;
+  --app-muted: #6b7280;
+  --app-success: #16a34a;
+  --app-warning: #ca8a04;
+  --app-danger: #dc2626;
+}
+
+/* ================= DARK MODE ================= */
+.dark {
+  --background: #111827;
+  --foreground: #ffffff;
+  --card: #1f2937;
+  --card-foreground: #ffffff;
+
+  --primary: #ffffff;
+  --primary-foreground: #111827;
+
+  --secondary: #374151;
+  --secondary-foreground: #ffffff;
+
+  --muted: #374151;
+  --muted-foreground: #9ca3af;
+
+  --border: rgba(255,255,255,0.1);
+}
+
+/* ================= BASE ================= */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+}
+
+/* ================= COMPONENT UTILITIES ================= */
+@layer components {
+  .page-container {
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+    background-color: var(--app-background);
+  }
+
+  @media (min-width: 768px) {
+    .page-container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  .card-base {
+    background-color: var(--app-card);
+    border: 1px solid var(--app-border);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+
+  .card-header-base {
+    background-color: rgb(249 250 251);
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--app-border);
+  }
+
+  .section-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--app-primary);
+  }
+
+  .muted-text {
+    color: var(--app-muted);
+  }
+}
