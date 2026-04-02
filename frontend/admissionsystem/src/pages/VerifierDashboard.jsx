@@ -43,96 +43,120 @@ export default function VerifierDashboard() {
     }
   }, [user]);
 
+  const totalAssigned = applications.length;
+  const inReviewCount = applications.filter(
+    (app) => app.applicationStatus === "IN_REVIEW"
+  ).length;
+  const verifiedCount = applications.filter(
+    (app) => app.applicationStatus === "VERIFIED"
+  ).length;
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-app-background">
-        <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
-          <p className="text-sm text-app-muted">Loading...</p>
+      <div className="min-h-screen bg-gray-50 py-8 px-6 md:px-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <p className="text-sm text-gray-600">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-app-background">
-      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div className="min-h-screen bg-gray-50 py-8 px-6 md:px-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-app-primary">
-              Verifier Dashboard
+            <h1 className="text-2xl md:text-3xl font-semibold text-blue-900">
+              My Assigned Applications
             </h1>
-            <p className="text-sm text-app-muted mt-1 mb-6">
-              Review and verify assigned applications
+            <p className="text-sm text-gray-600 mt-1">
+              Review and verify applications assigned to you
             </p>
           </div>
           <button
             onClick={logout}
-            className="bg-red-600 hover:bg-red-700 text-white rounded-md px-4 py-2"
+            className="btn-outline hover:bg-red-600 hover:text-white hover:border-red-600"
           >
-            Logout
+            Sign Out
           </button>
         </div>
 
         {error && (
-          <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6 mb-4">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
 
-        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
-            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
-              Assigned Applications
-            </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+            <p className="text-sm text-gray-600">Total Assigned</p>
+            <p className="text-3xl font-bold mt-2 text-blue-900">{totalAssigned}</p>
           </div>
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+            <p className="text-sm text-gray-600">In Review</p>
+            <p className="text-3xl font-bold mt-2 text-yellow-600">{inReviewCount}</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+            <p className="text-sm text-gray-600">Verified</p>
+            <p className="text-3xl font-bold mt-2 text-green-600">{verifiedCount}</p>
+          </div>
+        </div>
 
-          {applications.length === 0 ? (
-            <p className="text-sm text-app-muted">No applications assigned yet.</p>
-          ) : (
-            <div className="bg-app-card border border-app-border rounded-xl overflow-x-auto">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            {applications.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-xl border border-gray-200 text-gray-500">
+                No applications assigned yet
+              </div>
+            ) : (
               <table className="w-full">
-                <thead className="bg-blue-50">
+                <thead className="bg-blue-50 text-blue-900 uppercase text-xs tracking-wide">
                   <tr>
-                    <th className="p-4 text-sm border-b border-app-border">Application ID</th>
-                    <th className="p-4 text-sm border-b border-app-border">Name</th>
-                    <th className="p-4 text-sm border-b border-app-border">Email</th>
-                    <th className="p-4 text-sm border-b border-app-border">Status</th>
-                    <th className="p-4 text-sm border-b border-app-border">Action</th>
+                    <th className="p-4 text-left font-medium">Application ID</th>
+                    <th className="p-4 text-left font-medium">Name</th>
+                    <th className="p-4 text-left font-medium">Email</th>
+                    <th className="p-4 text-left font-medium">Status</th>
+                    <th className="p-4 text-left font-medium">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {applications.map((app) => (
-                    <tr key={app.id} className="hover:bg-gray-50">
-                      <td className="p-4 text-sm border-b border-app-border">{app.id}</td>
-                      <td className="p-4 text-sm border-b border-app-border">{app.name}</td>
-                      <td className="p-4 text-sm border-b border-app-border">{app.email}</td>
-                      <td className="p-4 text-sm border-b border-app-border">
+                    <tr
+                      key={app.id}
+                      className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer transition"
+                    >
+                      <td className="p-4 text-sm text-gray-700">{app.id}</td>
+                      <td className="p-4 text-sm text-gray-700">{app.name}</td>
+                      <td className="p-4 text-sm text-gray-700">{app.email}</td>
+                      <td className="p-4 text-sm text-gray-700">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            app.applicationStatus === "VERIFIED"
-                              ? "bg-green-100 text-green-700"
-                              : app.applicationStatus === "REJECTED"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-yellow-100 text-yellow-700"
+                            app.applicationStatus === "PENDING"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : app.applicationStatus === "IN_REVIEW"
+                              ? "bg-blue-100 text-blue-800"
+                              : app.applicationStatus === "VERIFIED"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
                           }`}
                         >
                           {app.applicationStatus}
                         </span>
                       </td>
-                      <td className="p-4 text-sm border-b border-app-border">
+                      <td className="p-4 text-sm text-gray-700">
                         <Link
                           to={`/verifier/applications/${app.id}`}
-                          className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2 text-sm"
+                          className="text-blue-700 hover:text-blue-900 hover:underline font-medium text-sm"
                         >
-                          View Details
+                          Review
                         </Link>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

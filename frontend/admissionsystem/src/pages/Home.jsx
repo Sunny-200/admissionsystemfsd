@@ -19,66 +19,59 @@ export default function Home() {
     }
   }, [user, navigate]);
 
-  return (
-    <div className="min-h-screen bg-app-background">
-      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
-        <h1 className="text-2xl md:text-3xl font-semibold text-app-primary">
-          IIIT Dharwad Admission Portal
-        </h1>
-        <p className="text-sm text-app-muted mt-1 mb-6">
-          A centralized system for admissions, verification, and assignments
-        </p>
+  const pageClasses = "min-h-screen bg-gray-50 flex items-center justify-center px-6 py-12";
+  const cardClasses =
+    "max-w-4xl w-full bg-white border border-gray-200 rounded-2xl shadow-md p-8 md:p-12 text-center space-y-6";
+  const titleClasses = "text-3xl md:text-4xl font-bold text-blue-900";
+  const subtitleClasses = "text-gray-600 text-sm md:text-base max-w-2xl mx-auto";
+  const primaryButtonClasses =
+    "bg-blue-900 text-white hover:bg-blue-800 rounded-md px-6 py-2.5 text-sm font-medium transition shadow-sm";
+  const outlineButtonClasses =
+    "border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white rounded-md px-6 py-2.5 text-sm font-medium transition";
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-            <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
-              <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
-                For Students
-              </p>
-            </div>
-            <p className="text-sm text-gray-700">
+  return (
+    <div className={pageClasses}>
+      <div className={cardClasses}>
+        <div className="space-y-3">
+          <h1 className={titleClasses}>IIIT Dharwad Admission Portal</h1>
+          <p className={subtitleClasses}>
+            A centralized system for admissions, verification, and assignments
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-blue-900">For Students</p>
+            <p className="text-sm text-gray-600 mt-2">
               Register for admission, submit documents, and track application status.
             </p>
           </div>
 
-          <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-            <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
-              <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
-                For Admins
-              </p>
-            </div>
-            <p className="text-sm text-gray-700">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-blue-900">For Admins</p>
+            <p className="text-sm text-gray-600 mt-2">
               Review applications, assign verifiers, and monitor progress.
             </p>
           </div>
 
-          <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-            <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
-              <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
-                For Verifiers
-              </p>
-            </div>
-            <p className="text-sm text-gray-700">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-blue-900">For Verifiers</p>
+            <p className="text-sm text-gray-600 mt-2">
               Verify documents, approve or reject applications, and submit remarks.
             </p>
           </div>
         </div>
 
-        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link
-              to="/login"
-              className="bg-[#1e3a8a] text-white hover:bg-[#172554] rounded-md px-4 py-2 text-sm font-medium"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/signup"
-              className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2"
-            >
-              Create Account
-            </Link>
-          </div>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+          <Link to="/login" className={primaryButtonClasses}>
+            Login
+          </Link>
+          <Link to="/signup" className={outlineButtonClasses}>
+            Signup
+          </Link>
+          <Link to="/dashboard" className={primaryButtonClasses}>
+            Dashboard
+          </Link>
         </div>
       </div>
     </div>

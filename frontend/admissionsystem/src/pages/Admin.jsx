@@ -20,22 +20,22 @@ export default function AdminPage() {
   }, [user, navigate]);
 
   return (
-    <div className="min-h-screen bg-app-background">
-      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div className="min-h-screen bg-gray-50 py-8 px-6 md:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-4 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-app-primary">
+            <h1 className="text-2xl md:text-3xl font-semibold text-blue-900">
               Admin Dashboard
             </h1>
-            <p className="text-sm text-app-muted mt-1 mb-6">
-              Manage student applications and assignments
+            <p className="text-sm text-gray-600 mt-1">
+              Manage student applications
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-col sm:flex-row">
             <button
               onClick={() => navigate("/admin/assignments")}
-              className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2"
+              className="bg-blue-900 text-white hover:bg-blue-800 rounded-md px-4 py-2 text-sm font-medium transition"
             >
               Assignments
             </button>
@@ -45,19 +45,14 @@ export default function AdminPage() {
                 logout();
                 navigate("/login");
               }}
-              className="bg-red-600 text-white hover:bg-red-700 rounded-md px-4 py-2"
-            >
-              Logout
+              className="btn-outline hover:bg-red-600 hover:text-white hover:border-red-600"
+              >
+              Sign Out
             </button>
           </div>
         </div>
 
-        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
-            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
-              Applications
-            </p>
-          </div>
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 md:p-6">
           <AdminApplicationsTable />
         </div>
       </div>

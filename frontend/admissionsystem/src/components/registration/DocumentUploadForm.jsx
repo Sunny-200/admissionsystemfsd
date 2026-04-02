@@ -70,33 +70,48 @@ export function DocumentUploadForm({ onBack, onSubmit }) {
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold">Documents</h2>
-        <p className="text-sm text-gray-600">
-          Upload the required documents to complete your application.
-        </p>
+    <div className="space-y-6">
+      <div className="text-sm font-semibold text-blue-900 uppercase tracking-wide border-b border-gray-200 pb-2">
+        Document Uploads
       </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <div className="space-y-3">
-        {documentFields.map((doc) => (
-          <div key={doc.key} className="space-y-1">
-            <label className="text-sm font-medium">{doc.label}</label>
-            <input
-              type="file"
-              onChange={(e) => handleFileChange(doc.key, e.target.files[0])}
-              className="w-full border p-2 rounded"
-            />
-          </div>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {documentFields.map((doc) => {
+          const selectedFile = files[doc.key];
+
+          return (
+            <label
+              key={doc.key}
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition cursor-pointer ${
+                selectedFile
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-300 hover:border-blue-400"
+              }`}
+            >
+              <input
+                type="file"
+                onChange={(e) => handleFileChange(doc.key, e.target.files[0])}
+                className="hidden"
+              />
+              <p className="text-sm font-medium text-blue-900">{doc.label}</p>
+              {selectedFile ? (
+                <p className="text-xs text-green-700 mt-1">
+                  Uploaded: {selectedFile.name}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-600 mt-1">Click to upload</p>
+              )}
+            </label>
+          );
+        })}
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex justify-between mt-6">
         <button
           onClick={onBack}
-          className="border px-4 py-2 rounded"
+          className="btn-danger"
         >
           Back
         </button>
@@ -104,7 +119,7 @@ export function DocumentUploadForm({ onBack, onSubmit }) {
         <button
           onClick={handleSubmit}
           disabled={uploading}
-          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-60"
+          className="bg-blue-900 text-white hover:bg-blue-800 px-5 py-2 rounded-md font-medium transition disabled:opacity-60"
         >
           {uploading ? "Uploading..." : "Submit"}
         </button>

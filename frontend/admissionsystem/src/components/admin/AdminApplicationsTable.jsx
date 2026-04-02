@@ -44,7 +44,7 @@ export default function AdminApplicationsTable() {
   const uniqueBranches = [...new Set(applications.map(a => a.branchAllotted))];
   const uniqueStatuses = [...new Set(applications.map(a => a.applicationStatus))];
 
-  if (loading) return <p className="text-sm text-app-muted">Loading...</p>;
+  if (loading) return <p className="text-sm text-gray-600">Loading...</p>;
 
   if (error) return <p className="text-red-600 text-sm">{error}</p>;
 
@@ -79,32 +79,45 @@ export default function AdminApplicationsTable() {
         </select>
       </div>
 
-      <div className="bg-app-card border border-app-border rounded-xl overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-blue-50">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[800px]">
+          <thead className="bg-blue-50 text-blue-900 uppercase text-xs tracking-wide">
             <tr>
-              <th className="p-4 text-sm border-b border-app-border">Name</th>
-              <th className="p-4 text-sm border-b border-app-border">Email</th>
-              <th className="p-4 text-sm border-b border-app-border">Branch</th>
-              <th className="p-4 text-sm border-b border-app-border">Status</th>
-              <th className="p-4 text-sm border-b border-app-border">Action</th>
+              <th className="p-4 text-left font-medium">Name</th>
+              <th className="p-4 text-left font-medium">Email</th>
+              <th className="p-4 text-left font-medium">Branch</th>
+              <th className="p-4 text-left font-medium">Status</th>
+              <th className="p-4 text-left font-medium">Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredApplications.map((app) => (
-              <tr key={app.id} className="hover:bg-gray-50">
-                <td className="p-4 text-sm border-b border-app-border">{app.name}</td>
-                <td className="p-4 text-sm border-b border-app-border">{app.user.email}</td>
-                <td className="p-4 text-sm border-b border-app-border">{app.branchAllotted}</td>
-                <td className="p-4 text-sm border-b border-app-border">
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+              <tr
+                key={app.id}
+                className="border-b border-gray-200 hover:bg-gray-50 transition"
+              >
+                <td className="p-4 text-sm text-gray-700">{app.name}</td>
+                <td className="p-4 text-sm text-gray-700">{app.user.email}</td>
+                <td className="p-4 text-sm text-gray-700">{app.branchAllotted}</td>
+                <td className="p-4 text-sm text-gray-700">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      app.applicationStatus === "PENDING"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : app.applicationStatus === "IN_REVIEW"
+                        ? "bg-blue-100 text-blue-800"
+                        : app.applicationStatus === "VERIFIED"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
                     {app.applicationStatus}
                   </span>
                 </td>
-                <td className="p-4 text-sm border-b border-app-border">
+                <td className="p-4 text-sm text-gray-700">
                   <button
                     onClick={() => navigate(`/admin/applications/${app.id}`)}
-                    className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2 text-sm"
+                    className="text-blue-700 hover:text-blue-900 hover:underline font-medium text-sm"
                   >
                     View
                   </button>

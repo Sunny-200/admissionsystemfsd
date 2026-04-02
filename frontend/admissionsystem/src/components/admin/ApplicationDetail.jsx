@@ -37,15 +37,15 @@ export default function ApplicationDetail({ applicationId }) {
     }
   }
 
-  if (loading) return <p className="text-sm text-app-muted">Loading...</p>;
+  if (loading) return <p className="text-sm text-gray-600">Loading...</p>;
 
   if (error || !application) {
     return (
-      <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
         <p className="text-red-600 text-sm mb-4">{error || "Application not found"}</p>
         <button
           onClick={() => navigate("/admin")}
-          className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2"
+          className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white rounded-md px-4 py-2 text-sm"
         >
           Back
         </button>
@@ -55,43 +55,86 @@ export default function ApplicationDetail({ applicationId }) {
 
   return (
     <div className="space-y-6">
-      <button
-        onClick={() => navigate("/admin")}
-        className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2"
-      >
-        ← Back
-      </button>
-
-      <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-        <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
-          <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
-            Application Overview
-          </p>
+      <div className="bg-blue-900 text-white rounded-xl px-6 py-4 flex justify-between items-center shadow-sm">
+        <div>
+          <h1 className="text-xl font-semibold">Application Details</h1>
+          <p className="text-sm text-blue-100">Review and verify submitted application</p>
         </div>
-        <h1 className="text-xl font-semibold text-app-primary">{application.name}</h1>
-        <p className="text-sm text-app-muted mt-1">Status: {application.applicationStatus}</p>
+        <button
+          onClick={() => navigate("/admin")}
+          className="bg-white/20 hover:bg-white/30 text-white px-4 py-1.5 rounded-md text-sm transition"
+        >
+          Back
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
-            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">Personal Info</p>
-          </div>
-          <p className="text-sm text-gray-700">Email: {application.user.email}</p>
-          <p className="text-sm text-gray-700">DOB: {new Date(application.dateOfBirth).toDateString()}</p>
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="px-6 py-3 border-b border-gray-200 text-sm font-semibold text-blue-900 uppercase tracking-wide bg-gray-50">
+          Applicant Overview
         </div>
-
-        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
-            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">Documents</p>
+        <div className="px-6 py-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs uppercase text-gray-500 tracking-wide">Name</p>
+              <p className="text-sm font-medium text-gray-800 mt-1">{application.name}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-gray-500 tracking-wide">Application ID</p>
+              <p className="text-sm font-medium text-gray-800 mt-1">{application.id}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-gray-500 tracking-wide">Email</p>
+              <p className="text-sm font-medium text-gray-800 mt-1">{application.user.email}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-gray-500 tracking-wide">Phone</p>
+              <p className="text-sm font-medium text-gray-800 mt-1">{application.contactNumber}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-gray-500 tracking-wide">DOB</p>
+              <p className="text-sm font-medium text-gray-800 mt-1">
+                {new Date(application.dateOfBirth).toDateString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-gray-500 tracking-wide">Aadhar</p>
+              <p className="text-sm font-medium text-gray-800 mt-1">{application.aadharNumber}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-gray-500 tracking-wide">Application Status</p>
+              <span
+                className={`inline-flex mt-1 px-3 py-1 rounded-full text-xs font-semibold ${
+                  application.applicationStatus === "VERIFIED"
+                    ? "bg-green-100 text-green-700"
+                    : application.applicationStatus === "REJECTED"
+                    ? "bg-red-100 text-red-700"
+                    : application.applicationStatus === "IN_REVIEW"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-yellow-100 text-yellow-700"
+                }`}
+              >
+                {application.applicationStatus}
+              </span>
+            </div>
           </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="px-6 py-3 border-b border-gray-200 text-sm font-semibold text-blue-900 uppercase tracking-wide bg-gray-50">
+          Documents
+        </div>
+        <div className="px-6 py-5">
           <div className="space-y-3">
             {application.documents.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">{doc.documentType}</span>
+              <div
+                key={doc.id}
+                className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-md px-4 py-3 hover:bg-gray-100 transition"
+              >
+                <span className="text-sm font-medium text-gray-700">{doc.documentType}</span>
                 <button
                   onClick={() => handleViewDocument(doc)}
-                  className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2 text-sm"
+                  className="bg-blue-900 text-white text-xs px-3 py-1.5 rounded-md hover:bg-blue-800 transition"
                 >
                   View
                 </button>
@@ -102,11 +145,15 @@ export default function ApplicationDetail({ applicationId }) {
       </div>
 
       {application.remarksFromStudent && (
-        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
-            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">Remarks</p>
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="px-6 py-3 border-b border-gray-200 text-sm font-semibold text-blue-900 uppercase tracking-wide bg-gray-50">
+            Remarks
           </div>
-          <p className="text-sm text-gray-700">{application.remarksFromStudent}</p>
+          <div className="px-6 py-5">
+            <div className="p-3 bg-blue-50 rounded-md border-l-4 border-blue-500">
+              <p className="text-sm text-gray-700">{application.remarksFromStudent}</p>
+            </div>
+          </div>
         </div>
       )}
     </div>

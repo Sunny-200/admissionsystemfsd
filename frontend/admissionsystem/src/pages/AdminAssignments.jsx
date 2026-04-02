@@ -112,117 +112,132 @@ export default function AdminAssignments() {
   };
 
   // 🧾 UI
-  if (loading) return <p className="text-sm text-app-muted">Loading...</p>;
+  if (loading) return <p className="text-sm text-gray-600">Loading...</p>;
 
   return (
-    <div className="min-h-screen bg-app-background">
-      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
-        <h1 className="text-2xl md:text-3xl font-semibold text-app-primary">
-          Verifier Assignments
-        </h1>
-        <p className="text-sm text-app-muted mt-1 mb-6">
-          Assign applications to verifiers and track status
-        </p>
+    <div className="min-h-screen bg-gray-50 py-8 px-6 md:px-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <button
+          onClick={() => navigate("/admin")}
+          className="text-blue-900 hover:text-blue-700 text-sm font-medium"
+        >
+          ← Back to Admin Dashboard
+        </button>
+        <div>
+          <h1 className="text-2xl md:text-3xl font-semibold text-blue-900">
+            Verifier Assignments
+          </h1>
+          <p className="text-sm text-gray-600 mt-1 mb-4">
+            Assign applications to verifiers and track status
+          </p>
+        </div>
 
-        {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
 
-        <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
-          <div className="bg-gray-50 px-6 py-3 border-b border-app-border -mx-6 -mt-6 mb-4">
-            <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
-              Assignment List
-            </p>
-          </div>
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="p-4 md:p-6 space-y-4">
 
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <select
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2"
-            >
-              <option value="all">All</option>
-              <option value="assigned">Assigned</option>
-              <option value="unassigned">Unassigned</option>
-            </select>
-
-            <select
-              onChange={(e) => setFilterBranch(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2"
-            >
-              <option value="all">All Branches</option>
-              {branches.map((b) => (
-                <option key={b}>{b}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="bg-app-card border border-app-border rounded-xl overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-blue-50">
-                <tr>
-                  <th className="p-4 text-sm border-b border-app-border">
-                    <input
-                      type="checkbox"
-                      onChange={toggleAll}
-                      checked={selectedApps.length === filteredApps.length}
-                    />
-                  </th>
-                  <th className="p-4 text-sm border-b border-app-border">Name</th>
-                  <th className="p-4 text-sm border-b border-app-border">Email</th>
-                  <th className="p-4 text-sm border-b border-app-border">Branch</th>
-                  <th className="p-4 text-sm border-b border-app-border">Status</th>
-                  <th className="p-4 text-sm border-b border-app-border">Verifier</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredApps.map((app) => (
-                  <tr key={app.id} className="hover:bg-gray-50">
-                    <td className="p-4 text-sm border-b border-app-border">
-                      <input
-                        type="checkbox"
-                        checked={selectedApps.includes(app.id)}
-                        onChange={() => toggleApp(app.id)}
-                      />
-                    </td>
-                    <td className="p-4 text-sm border-b border-app-border">{app.name}</td>
-                    <td className="p-4 text-sm border-b border-app-border">{app.email}</td>
-                    <td className="p-4 text-sm border-b border-app-border">{app.branchAllotted}</td>
-                    <td className="p-4 text-sm border-b border-app-border">
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                        {app.applicationStatus}
-                      </span>
-                    </td>
-                    <td className="p-4 text-sm border-b border-app-border">
-                      {app.assignedVerifier ? app.assignedVerifier.email : "Unassigned"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {selectedApps.length > 0 && (
-            <div className="mt-4 flex flex-col md:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-2">
               <select
-                value={selectedVerifier}
-                onChange={(e) => setSelectedVerifier(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2"
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
               >
-                <option value="">Select Verifier</option>
-                {verifiers.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.name || v.email}
-                  </option>
-                ))}
+                <option value="all">All</option>
+                <option value="assigned">Assigned</option>
+                <option value="unassigned">Unassigned</option>
               </select>
 
-              <button
-                onClick={handleAssign}
-                disabled={assigning}
-                className="bg-[#1e3a8a] text-white hover:bg-[#172554] rounded-md px-4 py-2 text-sm font-medium"
+              <select
+                onChange={(e) => setFilterBranch(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
               >
-                {assigning ? "Assigning..." : "Assign"}
-              </button>
+                <option value="all">All Branches</option>
+                {branches.map((b) => (
+                  <option key={b}>{b}</option>
+                ))}
+              </select>
             </div>
-          )}
+
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px]">
+                <thead className="bg-blue-50 text-blue-900 uppercase text-xs tracking-wide">
+                  <tr>
+                    <th className="p-4 text-left font-medium">
+                      <input
+                        type="checkbox"
+                        onChange={toggleAll}
+                        checked={selectedApps.length === filteredApps.length}
+                      />
+                    </th>
+                    <th className="p-4 text-left font-medium">Name</th>
+                    <th className="p-4 text-left font-medium">Email</th>
+                    <th className="p-4 text-left font-medium">Branch</th>
+                    <th className="p-4 text-left font-medium">Status</th>
+                    <th className="p-4 text-left font-medium">Verifier</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredApps.map((app) => (
+                    <tr key={app.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                      <td className="p-4 text-sm text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={selectedApps.includes(app.id)}
+                          onChange={() => toggleApp(app.id)}
+                        />
+                      </td>
+                      <td className="p-4 text-sm text-gray-700">{app.name}</td>
+                      <td className="p-4 text-sm text-gray-700">{app.email}</td>
+                      <td className="p-4 text-sm text-gray-700">{app.branchAllotted}</td>
+                      <td className="p-4 text-sm text-gray-700">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            app.applicationStatus === "PENDING"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : app.applicationStatus === "IN_REVIEW"
+                              ? "bg-blue-100 text-blue-800"
+                              : app.applicationStatus === "VERIFIED"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {app.applicationStatus}
+                        </span>
+                      </td>
+                      <td className="p-4 text-sm text-gray-700">
+                        {app.assignedVerifier ? app.assignedVerifier.email : "Unassigned"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {selectedApps.length > 0 && (
+              <div className="flex flex-col sm:flex-row gap-2 items-center">
+                <select
+                  value={selectedVerifier}
+                  onChange={(e) => setSelectedVerifier(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
+                >
+                  <option value="">Select Verifier</option>
+                  {verifiers.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name || v.email}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={handleAssign}
+                  disabled={assigning}
+                  className="bg-blue-900 text-white hover:bg-blue-800 px-4 py-2 rounded-md text-sm font-medium transition"
+                >
+                  {assigning ? "Assigning..." : "Assign"}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -56,27 +56,26 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-app-background">
-      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
-        <div className="max-w-md mx-auto bg-app-card border border-app-border rounded-xl shadow-lg p-8">
-          <h1 className="text-2xl md:text-3xl font-semibold text-app-primary">
+    <div className="page-center">
+      <div className="card-container">
+        <h1 className="page-title">
             Create Student Account
           </h1>
-          <p className="text-sm text-app-muted mt-1 mb-6">
+          <p className="page-subtitle">
             Register to start your admission application
           </p>
 
           {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
           {success && <p className="text-green-600 text-sm mb-3">{success}</p>}
 
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-6">
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Email</label>
+              <label className="form-label">Email</label>
               <input
                 type="email"
                 placeholder="name@example.com"
                 {...form.register("email")}
-                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-md px-3 py-2 w-full"
+                className="form-input"
               />
               <p className="text-red-600 text-xs">
                 {form.formState.errors.email?.message}
@@ -84,12 +83,12 @@ export default function Signup() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Password</label>
+              <label className="form-label">Password</label>
               <input
                 type="password"
                 placeholder="Minimum 6 characters"
                 {...form.register("password")}
-                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-md px-3 py-2 w-full"
+                className="form-input"
               />
               <p className="text-red-600 text-xs">
                 {form.formState.errors.password?.message}
@@ -97,34 +96,33 @@ export default function Signup() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Full Name</label>
+              <label className="form-label">Full Name</label>
               <input
                 type="text"
                 placeholder="Your name"
                 {...form.register("name")}
-                className="border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-md px-3 py-2 w-full"
+                className="form-input"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#1e3a8a] text-white hover:bg-[#172554] rounded-md px-4 py-2 text-sm font-medium"
+              className="btn-primary"
             >
               {loading ? "Creating..." : "Create Account"}
             </button>
           </form>
 
-          <p className="text-sm text-center mt-6 text-app-muted">
+          <p className="text-center text-sm text-gray-600 mt-4">
             Already have an account?{" "}
             <span
               onClick={() => navigate("/login")}
-              className="text-app-primary cursor-pointer font-medium"
+              className="form-link cursor-pointer"
             >
               Login
             </span>
           </p>
-        </div>
       </div>
     </div>
   );
