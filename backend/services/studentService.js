@@ -1,10 +1,29 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const {
+  getBranchIdFromCode,
+  withLegacyBranchAllotted,
+} = require('../utils/branchMapping');
+
+const toOptionalInt = (value) => {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number(value);
+  return Number.isInteger(parsed) ? parsed : null;
+};
+
+const toOptionalBoolean = (value) => {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value === 'boolean') return value;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return null;
+};
 
 const getStudentProfile = async (userId) => {
   const profile = await prisma.studentProfile.findUnique({
     where: { userId },
     include: {
+      branch: true,
       documents: {
         orderBy: { documentType: 'asc' },
       },
@@ -15,7 +34,7 @@ const getStudentProfile = async (userId) => {
     throw new Error('No application found');
   }
 
-  return profile;
+  return withLegacyBranchAllotted(profile);
 };
 
 const getStudentRemarks = async (userId) => {
@@ -79,6 +98,8 @@ const submitApplication = async (userId, data) => {
 
   // Transaction
   const result = await prisma.$transaction(async (tx) => {
+    const mappedBranchId = await getBranchIdFromCode(data.branchAllotted, tx);
+
     const profile = existingProfile
       ? await tx.studentProfile.update({
           where: { id: existingProfile.id },
@@ -93,6 +114,15 @@ const submitApplication = async (userId, data) => {
             religion: data.religion,
             casteCategory: data.casteCategory,
             branchAllotted: data.branchAllotted,
+            branchId: mappedBranchId || null,
+            batchId: data.batchId || null,
+            gender: data.gender || null,
+            isPwd: toOptionalBoolean(data.isPwd),
+            pwdDisabilityType: data.pwdDisabilityType || null,
+            jeeMainRank: toOptionalInt(data.jeeMainRank),
+            jeeMainCategoryRank: toOptionalInt(data.jeeMainCategoryRank),
+            jeeAdvancedRank: toOptionalInt(data.jeeAdvancedRank),
+            jeeAdvancedCategoryRank: toOptionalInt(data.jeeAdvancedCategoryRank),
             seatAllotmentSource: data.seatAllotmentSource,
             permanentAddress: data.permanentAddress,
             state: data.state,
@@ -114,6 +144,15 @@ const submitApplication = async (userId, data) => {
             religion: data.religion,
             casteCategory: data.casteCategory,
             branchAllotted: data.branchAllotted,
+            branchId: mappedBranchId || null,
+            batchId: data.batchId || null,
+            gender: data.gender || null,
+            isPwd: toOptionalBoolean(data.isPwd),
+            pwdDisabilityType: data.pwdDisabilityType || null,
+            jeeMainRank: toOptionalInt(data.jeeMainRank),
+            jeeMainCategoryRank: toOptionalInt(data.jeeMainCategoryRank),
+            jeeAdvancedRank: toOptionalInt(data.jeeAdvancedRank),
+            jeeAdvancedCategoryRank: toOptionalInt(data.jeeAdvancedCategoryRank),
             seatAllotmentSource: data.seatAllotmentSource,
             permanentAddress: data.permanentAddress,
             state: data.state,

@@ -7,7 +7,7 @@ import { AcademicInfoForm } from "../components/registration/AcademicInfoForm";
 import { DocumentUploadForm } from "../components/registration/DocumentUploadForm";
 import { ProgressIndicator } from "../components/registration/ProgressIndicator";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
@@ -39,6 +39,7 @@ export default function Register() {
   const academicForm = useForm({
     resolver: zodResolver(academicInfoSchema),
   });
+  const isPwd = useWatch({ control: academicForm.control, name: "isPwd" });
 
   const handleBasic = (data) => {
     setBasicInfo(data);
@@ -108,6 +109,7 @@ export default function Register() {
               <DocumentUploadForm
                 onBack={() => setStep(2)}
                 onSubmit={handleSubmit}
+                isPwd={isPwd === "true" || isPwd === true}
               />
             </div>
           )}

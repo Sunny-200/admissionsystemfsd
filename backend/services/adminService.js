@@ -1,5 +1,6 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { withLegacyBranchAllotted } = require('../utils/branchMapping');
 
 // 1. Get all applications
 const getAllApplications = async () => {
@@ -18,6 +19,7 @@ const getAllApplications = async () => {
           status: true,
         },
       },
+      branch: true,
     },
     orderBy: {
       createdAt: 'desc',
@@ -36,6 +38,7 @@ const getApplicationById = async (id) => {
           createdAt: true,
         },
       },
+      branch: true,
       documents: true,
     },
   });
@@ -54,6 +57,9 @@ const getApplicationsWithAssignments = async () => {
       id: true,
       name: true,
       branchAllotted: true,
+      branch: {
+        select: { code: true },
+      },
       applicationStatus: true,
       createdAt: true,
       user: {
@@ -87,12 +93,15 @@ const getApplicationsWithAssignments = async () => {
     });
   });
 
-  return applications.map((app) => ({
-    ...app,
-    email: app.user?.email || null,
-    createdAt: app.createdAt.toISOString(),
-    assignedVerifier: map.get(app.id) || null,
-  }));
+  return applications.map((app) => {
+    const normalized = withLegacyBranchAllotted(app);
+    return {
+      ...normalized,
+      email: app.user?.email || null,
+      createdAt: app.createdAt.toISOString(),
+      assignedVerifier: map.get(app.id) || null,
+    };
+  });
 };
 
 // 4. Bulk assignment

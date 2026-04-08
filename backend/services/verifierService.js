@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { withLegacyBranchAllotted } = require('../utils/branchMapping');
 
 // 1. Get assigned applications
 const getAssignments = async (verifierId) => {
@@ -8,22 +9,28 @@ const getAssignments = async (verifierId) => {
       sp."id",
       sp."name",
       u."email",
-      sp."branchAllotted",
+      sp."branchAllotted" AS "legacyBranchAllotted",
+      b."code" AS "branchCode",
       sp."applicationStatus"::text,
       sp."createdAt",
       a."assignedAt"
     FROM "Assignment" a
     JOIN "StudentProfile" sp ON sp."id" = a."applicationId"
     JOIN "User" u ON u."id" = sp."userId"
+    LEFT JOIN "Branch" b ON b."id" = sp."branchId"
     WHERE a."verifierId" = ${verifierId}
     ORDER BY a."assignedAt" DESC
   `;
 
-  return rows.map((row) => ({
-    ...row,
-    createdAt: new Date(row.createdAt).toISOString(),
-    assignedAt: new Date(row.assignedAt).toISOString(),
-  }));
+  return rows.map((row) => {
+    const { branchCode, legacyBranchAllotted, ...rest } = row;
+    return {
+      ...rest,
+      branchAllotted: branchCode || legacyBranchAllotted || null,
+      createdAt: new Date(row.createdAt).toISOString(),
+      assignedAt: new Date(row.assignedAt).toISOString(),
+    };
+  });
 };
 
 // 2. Check assignment
@@ -48,6 +55,7 @@ const getApplicationById = async (id, verifierId) => {
     where: { id },
     include: {
       user: { select: { email: true } },
+      branch: true,
       documents: { orderBy: { uploadedAt: 'asc' } },
       assignments: {
         include: {
@@ -62,7 +70,7 @@ const getApplicationById = async (id, verifierId) => {
 
   if (!application) throw new Error('NOT_FOUND');
 
-  return application;
+  return withLegacyBranchAllotted(application);
 };
 
 // 4. Get remarks

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import API from "../../api/axios";
 
-export function DocumentUploadForm({ onBack, onSubmit }) {
+export function DocumentUploadForm({ onBack, onSubmit, isPwd }) {
 
   const [files, setFiles] = useState({});
   const [uploading, setUploading] = useState(false);
@@ -24,6 +24,7 @@ export function DocumentUploadForm({ onBack, onSubmit }) {
     { key: "UNDERTAKING", label: "Undertaking" },
     { key: "CLASS_12_PERFORMANCE", label: "Class 12 Performance" },
     { key: "AADHAR_CARD", label: "Aadhar Card" },
+    ...(isPwd ? [{ key: "PWD_CERTIFICATE", label: "PWD Certificate" }] : []),
   ];
 
   // 🔥 S3 UPLOAD
