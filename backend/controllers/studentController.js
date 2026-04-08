@@ -4,6 +4,9 @@ const {
   submitApplication,
 } = require('../services/studentService');
 const { getSignedDocumentUrl } = require('../utils/s3Presign');
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
 
 // Returns the authenticated student's profile
 const getProfile = async (req, res) => {
@@ -66,6 +69,22 @@ const submitApplicationController = async (req, res) => {
   try {
     const userId = req.user.id;
     const data = req.body;
+
+    const currentYear = new Date().getFullYear();
+    let batch = await prisma.batch.findFirst({
+      where: { year: currentYear },
+    });
+
+    if (!batch) {
+      batch = await prisma.batch.create({
+        data: {
+          year: currentYear,
+          label: `${currentYear}`,
+        },
+      });
+    }
+
+    data.batchId = batch.id;
 
     const result = await submitApplication(userId, data);
 

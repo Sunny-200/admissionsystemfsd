@@ -14,6 +14,18 @@ export default function Dashboard() {
 
   const latestVerifierRemark = remarks.find((r) => r.author?.role === "VERIFIER");
   const formatStatus = (value) => value?.toString().replace(/_/g, " ");
+  const formatValue = (value) => (value === null || value === undefined || value === "" ? "-" : value);
+  const hasValue = (value) => value !== null && value !== undefined && value !== "";
+  const isPwdTrue = profile?.isPwd === true;
+  const pwdStatus =
+    profile?.isPwd === true ? "Yes" : profile?.isPwd === false ? "No" : "-";
+  const branchValue = profile?.branch?.code || profile?.branch?.name || "-";
+  const batchValue =
+    profile?.batch?.name ||
+    profile?.batch?.code ||
+    profile?.batch?.label ||
+    profile?.batch?.year ||
+    "-";
   const applicationStatusClasses = {
     PENDING: "bg-yellow-100 text-yellow-800 border border-yellow-200",
     IN_REVIEW: "bg-blue-100 text-blue-800 border border-blue-200",
@@ -199,9 +211,21 @@ export default function Dashboard() {
                   <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">Basic Info</p>
                   <span className="text-xs text-app-muted">Profile</span>
                 </div>
-                <div className="space-y-2 text-sm text-gray-700">
-                  <p><span className="text-app-muted">Name:</span> {profile.name}</p>
-                  <p><span className="text-app-muted">DOB:</span> {new Date(profile.dateOfBirth).toDateString()}</p>
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <p className="text-xs text-app-muted">Name</p>
+                    <p className="font-medium text-app-primary">{formatValue(profile.name)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Date of Birth</p>
+                    <p className="font-medium text-app-primary">
+                      {profile.dateOfBirth ? new Date(profile.dateOfBirth).toDateString() : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Gender</p>
+                    <p className="font-medium text-app-primary">{formatValue(formatStatus(profile.gender))}</p>
+                  </div>
                 </div>
               </div>
 
@@ -210,9 +234,39 @@ export default function Dashboard() {
                   <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">Academic Info</p>
                   <span className="text-xs text-app-muted">Allocation</span>
                 </div>
-                <div className="space-y-2 text-sm text-gray-700">
-                  <p><span className="text-app-muted">Branch:</span> {profile.branchAllotted}</p>
-                  <p><span className="text-app-muted">Seat Source:</span> {profile.seatAllotmentSource}</p>
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <p className="text-xs text-app-muted">Branch</p>
+                    <p className="font-medium text-app-primary">{formatValue(branchValue || profile.branchAllotted)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Batch</p>
+                    <p className="font-medium text-app-primary">{formatValue(batchValue)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Seat Allotment Source</p>
+                    <p className="font-medium text-app-primary">{formatValue(profile.seatAllotmentSource)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Caste Category</p>
+                    <p className="font-medium text-app-primary">{formatValue(formatStatus(profile.casteCategory))}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Religion</p>
+                    <p className="font-medium text-app-primary">{formatValue(profile.religion)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Blood Group</p>
+                    <p className="font-medium text-app-primary">{formatValue(profile.bloodGroup)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Aadhar Number</p>
+                    <p className="font-medium text-app-primary">{formatValue(profile.aadharNumber)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Student Remarks</p>
+                    <p className="font-medium text-app-primary break-words">{formatValue(profile.remarksFromStudent)}</p>
+                  </div>
                 </div>
               </div>
 
@@ -221,10 +275,73 @@ export default function Dashboard() {
                   <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">Contact Info</p>
                   <span className="text-xs text-app-muted">Primary</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
-                  <p><span className="text-app-muted">Phone:</span> {profile.contactNumber}</p>
-                  <p><span className="text-app-muted">Guardian:</span> {profile.guardianName}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-app-muted">Contact Number</p>
+                    <p className="font-medium text-app-primary">{formatValue(profile.contactNumber)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Guardian Name</p>
+                    <p className="font-medium text-app-primary">{formatValue(profile.guardianName)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Guardian Number</p>
+                    <p className="font-medium text-app-primary">{formatValue(profile.guardianNumber)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Guardian Email</p>
+                    <p className="font-medium text-app-primary break-words">{formatValue(profile.guardianEmail)}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-xs text-app-muted">Address</p>
+                    <p className="font-medium text-app-primary break-words">{formatValue(profile.permanentAddress)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">State</p>
+                    <p className="font-medium text-app-primary">{formatValue(profile.state)}</p>
+                  </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-semibold text-app-primary uppercase tracking-wide">
+                  Admission & Ranking Details
+                </p>
+                <span className="text-xs text-app-muted">Extended</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                  <p className="text-xs text-app-muted">PWD Status</p>
+                  <p className="font-medium text-app-primary">{pwdStatus}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-app-muted">JEE Main Rank</p>
+                  <p className="font-medium text-app-primary">{formatValue(profile.jeeMainRank)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-app-muted">JEE Main Category Rank</p>
+                  <p className="font-medium text-app-primary">{formatValue(profile.jeeMainCategoryRank)}</p>
+                </div>
+                {isPwdTrue && (
+                  <div>
+                    <p className="text-xs text-app-muted">PWD Disability Type</p>
+                    <p className="font-medium text-app-primary">{formatValue(profile.pwdDisabilityType)}</p>
+                  </div>
+                )}
+                {hasValue(profile.jeeAdvancedRank) && (
+                  <div>
+                    <p className="text-xs text-app-muted">JEE Advanced Rank</p>
+                    <p className="font-medium text-app-primary">{profile.jeeAdvancedRank}</p>
+                  </div>
+                )}
+                {hasValue(profile.jeeAdvancedCategoryRank) && (
+                  <div>
+                    <p className="text-xs text-app-muted">JEE Advanced Category Rank</p>
+                    <p className="font-medium text-app-primary">{profile.jeeAdvancedCategoryRank}</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -249,13 +366,20 @@ export default function Dashboard() {
                       >
                         {formatStatus(doc.status) || "Pending"}
                       </span>
+                      {doc.status === "REJECTED" && (
+                        <p className="text-xs text-red-600 mt-1">
+                          Reason: {doc.rejectionReason || "No reason provided"}
+                        </p>
+                      )}
                     </div>
-                    <button
-                      onClick={() => handleDownload(doc)}
-                      className="border border-app-primary text-app-primary hover:bg-app-primary hover:text-white rounded-md px-4 py-2 text-sm font-medium"
-                    >
-                      Download
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleDownload(doc)}
+                        className="border border-blue-200 bg-white text-blue-900 hover:bg-blue-900 hover:border-blue-900 hover:text-white rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors duration-200"
+                      >
+                        Download
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

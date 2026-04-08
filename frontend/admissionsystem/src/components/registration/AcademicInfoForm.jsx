@@ -52,6 +52,7 @@ export function AcademicInfoForm({ form, onSubmit, onBack }) {
   const bloodGroupOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
   const isPwd = form.watch("isPwd");
+  const casteCategory = form.watch("casteCategory");
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -86,7 +87,7 @@ export function AcademicInfoForm({ form, onSubmit, onBack }) {
           <select {...form.register("casteCategory")} className="form-input">
             <option value="GENERAL">General</option>
             <option value="GENERAL_EWS">General (EWS)</option>
-            <option value="OBC_NCL">OBC</option>
+            <option value="OBC_NCL">OBC-NCL</option>
             <option value="SC">SC</option>
             <option value="ST">ST</option>
           </select>
@@ -127,9 +128,7 @@ export function AcademicInfoForm({ form, onSubmit, onBack }) {
               <input
                 type="radio"
                 value="false"
-                {...form.register("isPwd", {
-                  setValueAs: (value) => value === "true",
-                })}
+                {...form.register("isPwd")}
                 className="h-4 w-4"
               />
               No
@@ -138,9 +137,7 @@ export function AcademicInfoForm({ form, onSubmit, onBack }) {
               <input
                 type="radio"
                 value="true"
-                {...form.register("isPwd", {
-                  setValueAs: (value) => value === "true",
-                })}
+                {...form.register("isPwd")}
                 className="h-4 w-4"
               />
               Yes
@@ -170,16 +167,31 @@ export function AcademicInfoForm({ form, onSubmit, onBack }) {
           />
         </div>
 
-        <div>
-          <label className="form-label">JEE Main Category Rank</label>
-          <input
-            type="number"
-            min="0"
-            placeholder="JEE Main Category Rank"
-            {...form.register("jeeMainCategoryRank")}
-            className="form-input"
-          />
-        </div>
+        {(isPwd === "true" || casteCategory !== "GENERAL") && (
+          <>
+            <div>
+              <label className="form-label">JEE Main Category Rank</label>
+              <input
+                type="number"
+                min="0"
+                placeholder="JEE Main Category Rank"
+                {...form.register("jeeMainCategoryRank")}
+                className="form-input"
+              />
+            </div>
+
+            <div>
+              <label className="form-label">JEE Advanced Category Rank (optional)</label>
+              <input
+                type="number"
+                min="0"
+                placeholder="JEE Advanced Category Rank"
+                {...form.register("jeeAdvancedCategoryRank")}
+                className="form-input"
+              />
+            </div>
+          </>
+        )}
 
         <div>
           <label className="form-label">JEE Advanced Rank (optional)</label>
@@ -188,17 +200,6 @@ export function AcademicInfoForm({ form, onSubmit, onBack }) {
             min="0"
             placeholder="JEE Advanced Rank"
             {...form.register("jeeAdvancedRank")}
-            className="form-input"
-          />
-        </div>
-
-        <div>
-          <label className="form-label">JEE Advanced Category Rank (optional)</label>
-          <input
-            type="number"
-            min="0"
-            placeholder="JEE Advanced Category Rank"
-            {...form.register("jeeAdvancedCategoryRank")}
             className="form-input"
           />
         </div>

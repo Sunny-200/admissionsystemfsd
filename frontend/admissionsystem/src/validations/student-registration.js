@@ -14,6 +14,34 @@ const optionalNonNegativeInt = z.preprocess(
     .optional()
 );
 
+const optionalNonNegativeIntWithMessage = (message) =>
+  z.preprocess(
+    (value) => {
+      if (value === "" || value === undefined || value === null) {
+        return undefined;
+      }
+      return Number(value);
+    },
+    z
+      .number({ message })
+      .int({ message: "Value must be an integer" })
+      .nonnegative({ message: "Value must be 0 or more" })
+      .optional()
+  );
+
+const requiredBooleanFromRadio = z.preprocess(
+  (value) => {
+    if (value === true || value === "true") {
+      return true;
+    }
+    if (value === false || value === "false") {
+      return false;
+    }
+    return undefined;
+  },
+  z.boolean({ message: "Please select PWD status" })
+);
+
 export const basicInfoSchema = z.object({
   name: z
     .string()
@@ -64,7 +92,7 @@ export const academicInfoSchema = z.object({
   gender: z.enum(["MALE", "FEMALE", "OTHER"], {
     message: "Please select gender",
   }),
-  isPwd: z.boolean({ message: "Please select PWD status" }),
+  isPwd: requiredBooleanFromRadio,
   pwdDisabilityType: z
     .string()
     .max(100, { message: "PWD disability type must not exceed 100 characters" })
@@ -73,10 +101,9 @@ export const academicInfoSchema = z.object({
     .number({ message: "JEE Main rank is required" })
     .int({ message: "JEE Main rank must be an integer" })
     .nonnegative({ message: "JEE Main rank must be 0 or more" }),
-  jeeMainCategoryRank: z.coerce
-    .number({ message: "JEE Main category rank is required" })
-    .int({ message: "JEE Main category rank must be an integer" })
-    .nonnegative({ message: "JEE Main category rank must be 0 or more" }),
+  jeeMainCategoryRank: optionalNonNegativeIntWithMessage(
+    "JEE Main category rank is required"
+  ),
   jeeAdvancedRank: optionalNonNegativeInt,
   jeeAdvancedCategoryRank: optionalNonNegativeInt,
   seatAllotmentSource: z
@@ -105,6 +132,14 @@ export const academicInfoSchema = z.object({
       code: z.ZodIssueCode.custom,
       message: "PWD disability type is required when PWD is Yes",
       path: ["pwdDisabilityType"],
+    });
+  }
+
+  if ((data.isPwd || data.casteCategory !== "GENERAL") && data.jeeMainCategoryRank === undefined) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "JEE Main category rank is required",
+      path: ["jeeMainCategoryRank"],
     });
   }
 });
