@@ -265,6 +265,22 @@ export default function VerifierApplicationDetail() {
                     <p className="text-xs text-app-muted">Caste Category</p>
                     <p className="font-medium text-app-primary">{formatValue(formatStatus(application.casteCategory))}</p>
                   </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Religion</p>
+                    <p className="font-medium text-app-primary">{formatValue(application.religion)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Blood Group</p>
+                    <p className="font-medium text-app-primary">{formatValue(application.bloodGroup)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Aadhar Number</p>
+                    <p className="font-medium text-app-primary">{formatValue(application.aadharNumber)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-app-muted">Student Remarks</p>
+                    <p className="font-medium text-app-primary break-words">{formatValue(application.remarksFromStudent)}</p>
+                  </div>
                 </div>
               </div>
 

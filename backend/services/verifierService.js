@@ -56,6 +56,7 @@ const getApplicationById = async (id, verifierId) => {
     include: {
       user: { select: { email: true } },
       branch: true,
+      batch: true,
       documents: { orderBy: { uploadedAt: 'asc' } },
       assignments: {
         include: {

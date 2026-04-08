@@ -20,18 +20,50 @@ const toOptionalBoolean = (value) => {
 };
 
 const getStudentProfile = async (userId) => {
-  const profile = await prisma.studentProfile.findUnique({
-    where: { userId },
-    include: {
-      branch: true,
-      documents: {
-        orderBy: { documentType: 'asc' },
-      },
+  const includeConfig = {
+    branch: true,
+    batch: true,
+    documents: {
+      orderBy: { documentType: 'asc' },
     },
+  };
+
+  let profile = await prisma.studentProfile.findUnique({
+    where: { userId },
+    include: includeConfig,
   });
 
   if (!profile) {
     throw new Error('No application found');
+  }
+
+  if (!profile.batchId || !profile.batch) {
+    const currentYear = new Date().getFullYear();
+    const batchCode = String(currentYear);
+    const batchName = `Batch ${currentYear}`;
+
+    let batch = await prisma.batch.findFirst({
+      where: {
+        OR: [{ code: batchCode }, { startYear: currentYear }],
+      },
+    });
+
+    if (!batch) {
+      batch = await prisma.batch.create({
+        data: {
+          code: batchCode,
+          name: batchName,
+          startYear: currentYear,
+          endYear: currentYear + 4,
+        },
+      });
+    }
+
+    profile = await prisma.studentProfile.update({
+      where: { id: profile.id },
+      data: { batchId: batch.id },
+      include: includeConfig,
+    });
   }
 
   return withLegacyBranchAllotted(profile);
@@ -99,6 +131,28 @@ const submitApplication = async (userId, data) => {
   // Transaction
   const result = await prisma.$transaction(async (tx) => {
     const mappedBranchId = await getBranchIdFromCode(data.branchAllotted, tx);
+    const currentYear = new Date().getFullYear();
+    const batchCode = String(currentYear);
+    const batchName = `Batch ${currentYear}`;
+
+    let batch = await tx.batch.findFirst({
+      where: {
+        OR: [{ code: batchCode }, { startYear: currentYear }],
+      },
+      select: { id: true },
+    });
+
+    if (!batch) {
+      batch = await tx.batch.create({
+        data: {
+          code: batchCode,
+          name: batchName,
+          startYear: currentYear,
+          endYear: currentYear + 4,
+        },
+        select: { id: true },
+      });
+    }
 
     const profile = existingProfile
       ? await tx.studentProfile.update({
@@ -115,7 +169,7 @@ const submitApplication = async (userId, data) => {
             casteCategory: data.casteCategory,
             branchAllotted: data.branchAllotted,
             branchId: mappedBranchId || null,
-            batchId: data.batchId || null,
+            batchId: batch.id,
             gender: data.gender || null,
             isPwd: toOptionalBoolean(data.isPwd),
             pwdDisabilityType: data.pwdDisabilityType || null,
@@ -145,7 +199,7 @@ const submitApplication = async (userId, data) => {
             casteCategory: data.casteCategory,
             branchAllotted: data.branchAllotted,
             branchId: mappedBranchId || null,
-            batchId: data.batchId || null,
+            batchId: batch.id,
             gender: data.gender || null,
             isPwd: toOptionalBoolean(data.isPwd),
             pwdDisabilityType: data.pwdDisabilityType || null,

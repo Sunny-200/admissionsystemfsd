@@ -20,6 +20,15 @@ const getAllApplications = async () => {
         },
       },
       branch: true,
+      batch: {
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          startYear: true,
+          endYear: true,
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc',
@@ -39,6 +48,7 @@ const getApplicationById = async (id) => {
         },
       },
       branch: true,
+      batch: true,
       documents: true,
     },
   });

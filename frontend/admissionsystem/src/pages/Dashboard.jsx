@@ -24,7 +24,9 @@ export default function Dashboard() {
     profile?.batch?.name ||
     profile?.batch?.code ||
     profile?.batch?.label ||
+    (profile?.batch?.startYear ? `Batch ${profile.batch.startYear}` : null) ||
     profile?.batch?.year ||
+    profile?.batch?.startYear ||
     "-";
   const applicationStatusClasses = {
     PENDING: "bg-yellow-100 text-yellow-800 border border-yellow-200",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 
@@ -12,6 +12,19 @@ export default function AdminApplicationsTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [branchFilter, setBranchFilter] = useState("ALL");
+  const [selectedBatch, setSelectedBatch] = useState("ALL");
+
+  const getBatchValue = (app) => {
+    if (app?.batch?.startYear) return String(app.batch.startYear);
+    if (app?.batch?.year) return String(app.batch.year);
+    if (app?.batchYear) return String(app.batchYear);
+    if (app?.batch?.code) return String(app.batch.code);
+    if (app?.batch?.name) {
+      const yearMatch = String(app.batch.name).match(/\b(20\d{2})\b/);
+      return yearMatch ? yearMatch[1] : String(app.batch.name);
+    }
+    return "";
+  };
 
   useEffect(() => {
     fetchApplications();
@@ -20,7 +33,8 @@ export default function AdminApplicationsTable() {
   async function fetchApplications() {
     try {
       const res = await API.get("/admin/applications");
-      setApplications(res.data.data.applications);
+      const apps = res.data.data.applications || [];
+      setApplications(apps);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch applications");
@@ -31,18 +45,27 @@ export default function AdminApplicationsTable() {
 
   const filteredApplications = applications.filter((app) => {
     const query = searchQuery.toLowerCase();
+    const appBatchValue = getBatchValue(app);
 
     return (
       (app.name.toLowerCase().includes(query) ||
         app.user.email.toLowerCase().includes(query) ||
         app.branchAllotted.toLowerCase().includes(query)) &&
       (statusFilter === "ALL" || app.applicationStatus === statusFilter) &&
-      (branchFilter === "ALL" || app.branchAllotted === branchFilter)
+      (branchFilter === "ALL" || app.branchAllotted === branchFilter) &&
+      (selectedBatch === "ALL" || appBatchValue === selectedBatch)
     );
   });
 
   const uniqueBranches = [...new Set(applications.map(a => a.branchAllotted))];
   const uniqueStatuses = [...new Set(applications.map(a => a.applicationStatus))];
+  const batchOptions = useMemo(
+    () => [...new Set(applications.map((app) => getBatchValue(app)).filter(Boolean))],
+    [applications]
+  );
+
+  useEffect(() => {
+  }, [applications, batchOptions]);
 
   if (loading) return <p className="text-sm text-gray-600">Loading...</p>;
 
@@ -75,6 +98,19 @@ export default function AdminApplicationsTable() {
           <option value="ALL">All Branch</option>
           {uniqueBranches.map((b) => (
             <option key={b}>{b}</option>
+          ))}
+        </select>
+
+        <select
+          value={selectedBatch}
+          onChange={(e) => setSelectedBatch(e.target.value)}
+          className="border border-gray-300 rounded-md px-3 py-2"
+        >
+          <option value="ALL">All Batches</option>
+          {batchOptions.map((batch) => (
+            <option key={batch} value={batch}>
+              {batch}
+            </option>
           ))}
         </select>
       </div>
