@@ -207,10 +207,180 @@ const getVerifiers = async () => {
   });
 };
 
+// 6. Branch-wise intake vs admitted stats
+const getBranchStats = async () => {
+  const currentYear = new Date().getFullYear();
+
+  const activeBatch =
+    (await prisma.batch.findFirst({
+      where: { isActive: true },
+      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
+      select: { id: true },
+    })) ||
+    (await prisma.batch.findFirst({
+      where: {
+        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    }));
+
+  const branches = await prisma.branch.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      code: true,
+      name: true,
+    },
+    orderBy: { code: 'asc' },
+  });
+
+  const intakeRows = activeBatch
+    ? await prisma.branchIntake.findMany({
+        where: { batchId: activeBatch.id },
+        select: {
+          branchId: true,
+          intake: true,
+        },
+      })
+    : [];
+
+  const intakeByBranchId = new Map(
+    intakeRows.map((row) => [row.branchId, Number(row.intake || 0)])
+  );
+
+  const branchCodeById = new Map(branches.map((branch) => [branch.id, branch.code]));
+
+  const admittedProfiles = await prisma.studentProfile.findMany({
+    where: {
+      applicationStatus: {
+        notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
+      },
+      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+    },
+    select: {
+      branchId: true,
+      branchAllotted: true,
+    },
+  });
+
+  const admittedByBranchCode = new Map();
+
+  admittedProfiles.forEach((profile) => {
+    const code =
+      (profile.branchId ? branchCodeById.get(profile.branchId) : null) ||
+      profile.branchAllotted ||
+      null;
+
+    if (!code) return;
+
+    admittedByBranchCode.set(code, (admittedByBranchCode.get(code) || 0) + 1);
+  });
+
+  const stats = branches.map((branch) => ({
+    branch: branch.code,
+    intake: intakeByBranchId.get(branch.id) || 0,
+    admitted: admittedByBranchCode.get(branch.code) || 0,
+  }));
+
+  admittedByBranchCode.forEach((admitted, code) => {
+    const alreadyIncluded = stats.some((item) => item.branch === code);
+    if (!alreadyIncluded) {
+      stats.push({
+        branch: code,
+        intake: 0,
+        admitted,
+      });
+    }
+  });
+
+  return stats.sort((a, b) => a.branch.localeCompare(b.branch));
+};
+
+// 7. Branch-wise gender distribution stats
+const getGenderStats = async () => {
+  const currentYear = new Date().getFullYear();
+
+  const activeBatch =
+    (await prisma.batch.findFirst({
+      where: { isActive: true },
+      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
+      select: { id: true },
+    })) ||
+    (await prisma.batch.findFirst({
+      where: {
+        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    }));
+
+  const branches = await prisma.branch.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      code: true,
+    },
+    orderBy: { code: 'asc' },
+  });
+
+  const branchCodeById = new Map(branches.map((branch) => [branch.id, branch.code]));
+  const defaultStatsByBranch = new Map(
+    branches.map((branch) => [branch.code, { male: 0, female: 0, other: 0 }])
+  );
+
+  const admittedProfiles = await prisma.studentProfile.findMany({
+    where: {
+      applicationStatus: {
+        notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
+      },
+      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+    },
+    select: {
+      branchId: true,
+      branchAllotted: true,
+      gender: true,
+    },
+  });
+
+  admittedProfiles.forEach((profile) => {
+    const code =
+      (profile.branchId ? branchCodeById.get(profile.branchId) : null) ||
+      profile.branchAllotted ||
+      null;
+
+    if (!code) return;
+
+    const current = defaultStatsByBranch.get(code) || { male: 0, female: 0, other: 0 };
+    const normalizedGender = String(profile.gender || '').toUpperCase();
+
+    if (normalizedGender === 'MALE') {
+      current.male += 1;
+    } else if (normalizedGender === 'FEMALE') {
+      current.female += 1;
+    } else {
+      current.other += 1;
+    }
+
+    defaultStatsByBranch.set(code, current);
+  });
+
+  const stats = Array.from(defaultStatsByBranch.entries()).map(([branch, counts]) => ({
+    branch,
+    male: counts.male,
+    female: counts.female,
+    other: counts.other,
+  }));
+
+  return stats.sort((a, b) => a.branch.localeCompare(b.branch));
+};
+
 module.exports = {
   getAllApplications,
   getApplicationById,
   getApplicationsWithAssignments,
   bulkAssign,
   getVerifiers,
+  getBranchStats,
+  getGenderStats,
 };

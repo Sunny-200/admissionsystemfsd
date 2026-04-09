@@ -103,10 +103,44 @@ const getVerifiers = async (req, res) => {
   }
 };
 
+// Returns branch-wise stats for admin dashboards
+const getBranchStats = async (req, res) => {
+  try {
+    const data = await adminService.getBranchStats();
+    res.json({
+      success: true,
+      data: { stats: data },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// Returns branch-wise gender stats for admin dashboards
+const getGenderStats = async (req, res) => {
+  try {
+    const data = await adminService.getGenderStats();
+    res.json({
+      success: true,
+      data: { stats: data },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 module.exports = {
   getApplications,
   getApplication,
   getApplicationsWithAssignments,
   bulkAssign,
   getVerifiers,
+  getBranchStats,
+  getGenderStats,
 };

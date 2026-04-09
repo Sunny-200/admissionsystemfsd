@@ -41,6 +41,13 @@ export default function AdminPage() {
             </button>
 
             <button
+              onClick={() => navigate("/admin/statistics")}
+              className="bg-[#1e3a8a] text-white hover:bg-[#172554] rounded-md px-4 py-2 text-sm font-medium"
+            >
+              Statistics
+            </button>
+
+            <button
               onClick={() => {
                 logout();
                 navigate("/login");

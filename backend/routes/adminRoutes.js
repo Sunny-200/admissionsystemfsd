@@ -8,6 +8,9 @@ const { checkRole } = require('../middleware/roleMiddleware');
 // Protect all admin routes
 router.use(verifyToken, checkRole('ADMIN'));
 
+router.get('/stats/branch', adminController.getBranchStats);
+router.get('/stats/gender', adminController.getGenderStats);
+
 router.get('/applications', adminController.getApplications);
 router.get('/applications/with-assignments', adminController.getApplicationsWithAssignments);
 router.get('/applications/:id', adminController.getApplication);

@@ -10,6 +10,7 @@ import AdminPage from "./pages/Admin";
 import AdminAssignments from "./pages/AdminAssignments";
 import AdminApplicationDetail from "./pages/AdminApplicationDetail";
 import ApplicationDetailWrapper from "./pages/admin/ApplicationDetailWrapper";
+import AdminStatistics from "./pages/admin/AdminStatistics";
 import VerifierDashboard from "./pages/VerifierDashboard";
 import VerifierApplicationDetail from "./pages/VerifierApplicationDetail";
 
@@ -69,6 +70,15 @@ function App() {
           element={
             <ProtectedRoute role="ADMIN">
               <ApplicationDetailWrapper />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/statistics"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <AdminStatistics />
             </ProtectedRoute>
           }
         />
