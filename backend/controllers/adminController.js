@@ -135,6 +135,70 @@ const getGenderStats = async (req, res) => {
   }
 };
 
+// Returns PWD vs non-PWD stats for admin dashboards
+const getPwdStats = async (req, res) => {
+  try {
+    const data = await adminService.getPwdStats();
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// Returns state-wise stats for admin dashboards
+const getStateStats = async (req, res) => {
+  try {
+    const data = await adminService.getStateStats();
+    res.json({
+      success: true,
+      data: { stats: data },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// Returns category-wise stats for admin dashboards
+const getCategoryStats = async (req, res) => {
+  try {
+    const data = await adminService.getCategoryStats();
+    res.json({
+      success: true,
+      data: { stats: data },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// Returns opening vs closing rank range by branch and category
+const getRankRangeStats = async (req, res) => {
+  try {
+    const data = await adminService.getRankRangeStats();
+    res.json({
+      success: true,
+      data: { stats: data },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 module.exports = {
   getApplications,
   getApplication,
@@ -143,4 +207,8 @@ module.exports = {
   getVerifiers,
   getBranchStats,
   getGenderStats,
+  getPwdStats,
+  getStateStats,
+  getCategoryStats,
+  getRankRangeStats,
 };

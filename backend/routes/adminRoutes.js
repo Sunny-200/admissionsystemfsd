@@ -10,6 +10,10 @@ router.use(verifyToken, checkRole('ADMIN'));
 
 router.get('/stats/branch', adminController.getBranchStats);
 router.get('/stats/gender', adminController.getGenderStats);
+router.get('/stats/pwd', adminController.getPwdStats);
+router.get('/stats/state', adminController.getStateStats);
+router.get('/stats/category', adminController.getCategoryStats);
+router.get('/stats/rank-range', adminController.getRankRangeStats);
 
 router.get('/applications', adminController.getApplications);
 router.get('/applications/with-assignments', adminController.getApplicationsWithAssignments);

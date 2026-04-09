@@ -375,6 +375,271 @@ const getGenderStats = async () => {
   return stats.sort((a, b) => a.branch.localeCompare(b.branch));
 };
 
+// 8. PWD vs Non-PWD distribution stats
+const getPwdStats = async () => {
+  const currentYear = new Date().getFullYear();
+
+  const activeBatch =
+    (await prisma.batch.findFirst({
+      where: { isActive: true },
+      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
+      select: { id: true },
+    })) ||
+    (await prisma.batch.findFirst({
+      where: {
+        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    }));
+
+  const admittedProfiles = await prisma.studentProfile.findMany({
+    where: {
+      applicationStatus: {
+        notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
+      },
+      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+    },
+    select: {
+      isPwd: true,
+      gender: true,
+    },
+  });
+
+  const result = {
+    pwd: { male: 0, female: 0, total: 0 },
+    nonPwd: { male: 0, female: 0, total: 0 },
+  };
+
+  admittedProfiles.forEach((profile) => {
+    const bucket = profile.isPwd ? result.pwd : result.nonPwd;
+    const normalizedGender = String(profile.gender || '').toUpperCase();
+
+    if (normalizedGender === 'MALE') {
+      bucket.male += 1;
+    } else if (normalizedGender === 'FEMALE') {
+      bucket.female += 1;
+    }
+
+    bucket.total += 1;
+  });
+
+  return result;
+};
+
+// 9. State-wise gender and total distribution stats
+const getStateStats = async () => {
+  const currentYear = new Date().getFullYear();
+
+  const activeBatch =
+    (await prisma.batch.findFirst({
+      where: { isActive: true },
+      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
+      select: { id: true },
+    })) ||
+    (await prisma.batch.findFirst({
+      where: {
+        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    }));
+
+  const admittedProfiles = await prisma.studentProfile.findMany({
+    where: {
+      applicationStatus: {
+        notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
+      },
+      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+    },
+    select: {
+      state: true,
+      gender: true,
+    },
+  });
+
+  const statsByState = new Map();
+
+  admittedProfiles.forEach((profile) => {
+    const state = (profile.state || '').trim();
+    if (!state) return;
+
+    const current = statsByState.get(state) || {
+      state,
+      male: 0,
+      female: 0,
+      total: 0,
+    };
+
+    const normalizedGender = String(profile.gender || '').toUpperCase();
+    if (normalizedGender === 'MALE') {
+      current.male += 1;
+    } else if (normalizedGender === 'FEMALE') {
+      current.female += 1;
+    }
+
+    current.total += 1;
+    statsByState.set(state, current);
+  });
+
+  return Array.from(statsByState.values()).sort((a, b) => a.state.localeCompare(b.state));
+};
+
+// 10. Category-wise gender and total distribution stats
+const getCategoryStats = async () => {
+  const currentYear = new Date().getFullYear();
+
+  const activeBatch =
+    (await prisma.batch.findFirst({
+      where: { isActive: true },
+      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
+      select: { id: true },
+    })) ||
+    (await prisma.batch.findFirst({
+      where: {
+        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    }));
+
+  const admittedProfiles = await prisma.studentProfile.findMany({
+    where: {
+      applicationStatus: {
+        notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
+      },
+      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+    },
+    select: {
+      casteCategory: true,
+      gender: true,
+    },
+  });
+
+  const statsByCategory = new Map();
+
+  admittedProfiles.forEach((profile) => {
+    const category = String(profile.casteCategory || '').trim();
+    if (!category) return;
+
+    const current = statsByCategory.get(category) || {
+      category,
+      male: 0,
+      female: 0,
+      other: 0,
+      total: 0,
+    };
+
+    const normalizedGender = String(profile.gender || '').toUpperCase();
+    if (normalizedGender === 'MALE') {
+      current.male += 1;
+    } else if (normalizedGender === 'FEMALE') {
+      current.female += 1;
+    } else {
+      current.other += 1;
+    }
+
+    current.total += 1;
+    statsByCategory.set(category, current);
+  });
+
+  return Array.from(statsByCategory.values()).sort((a, b) => b.total - a.total);
+};
+
+// 11. Opening vs Closing rank range by branch and category
+const getRankRangeStats = async () => {
+  const currentYear = new Date().getFullYear();
+
+  const activeBatch =
+    (await prisma.batch.findFirst({
+      where: { isActive: true },
+      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
+      select: { id: true },
+    })) ||
+    (await prisma.batch.findFirst({
+      where: {
+        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    }));
+
+  const branches = await prisma.branch.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      code: true,
+    },
+  });
+
+  const branchCodeById = new Map(branches.map((branch) => [branch.id, branch.code]));
+
+  const admittedProfiles = await prisma.studentProfile.findMany({
+    where: {
+      applicationStatus: {
+        notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
+      },
+      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+    },
+    select: {
+      branchId: true,
+      branchAllotted: true,
+      casteCategory: true,
+      isPwd: true,
+      jeeMainCategoryRank: true,
+      jeeMainRank: true,
+      jeeAdvancedCategoryRank: true,
+      jeeAdvancedRank: true,
+    },
+  });
+
+  const rangeByKey = new Map();
+
+  admittedProfiles.forEach((profile) => {
+    const branch =
+      (profile.branchId ? branchCodeById.get(profile.branchId) : null) ||
+      String(profile.branchAllotted || '').trim().toUpperCase();
+    const category = profile.isPwd
+      ? 'PWD'
+      : String(profile.casteCategory || '').trim().toUpperCase();
+
+    if (!branch || !category) return;
+
+    const rankCandidates = [
+      profile.jeeMainCategoryRank,
+      profile.jeeMainRank,
+      profile.jeeAdvancedCategoryRank,
+      profile.jeeAdvancedRank,
+    ]
+      .map((rank) => Number(rank))
+      .filter((rank) => Number.isFinite(rank) && rank > 0);
+
+    if (rankCandidates.length === 0) return;
+
+    const studentRank = Math.min(...rankCandidates);
+    const key = `${branch}::${category}`;
+
+    const current = rangeByKey.get(key) || {
+      branch,
+      category,
+      openingRank: studentRank,
+      closingRank: studentRank,
+    };
+
+    current.openingRank = Math.min(current.openingRank, studentRank);
+    current.closingRank = Math.max(current.closingRank, studentRank);
+
+    rangeByKey.set(key, current);
+  });
+
+  return Array.from(rangeByKey.values()).sort((left, right) => {
+    if (left.branch !== right.branch) {
+      return left.branch.localeCompare(right.branch);
+    }
+    return left.openingRank - right.openingRank;
+  });
+};
+
 module.exports = {
   getAllApplications,
   getApplicationById,
@@ -383,4 +648,8 @@ module.exports = {
   getVerifiers,
   getBranchStats,
   getGenderStats,
+  getPwdStats,
+  getStateStats,
+  getCategoryStats,
+  getRankRangeStats,
 };
