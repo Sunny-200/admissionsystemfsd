@@ -116,20 +116,22 @@ export default function AdminAssignments() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-6 md:px-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <button
-          onClick={() => navigate("/admin")}
-          className="text-blue-900 hover:text-blue-700 text-sm font-medium"
-        >
-          ← Back to Admin Dashboard
-        </button>
-        <div>
-          <h1 className="text-2xl md:text-3xl font-semibold text-blue-900">
-            Verifier Assignments
-          </h1>
-          <p className="text-sm text-gray-600 mt-1 mb-4">
-            Assign applications to verifiers and track status
-          </p>
+      <div className={`max-w-7xl mx-auto space-y-6 ${selectedApps.length > 0 ? "pb-32" : ""}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-semibold text-blue-900">
+              Verifier Assignments
+            </h1>
+            <p className="text-sm text-gray-600 mt-1 mb-4">
+              Assign applications to verifiers and track status
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/admin")}
+            className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white rounded-md px-4 py-2 text-sm font-medium"
+          >
+            Back
+          </button>
         </div>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -166,7 +168,7 @@ export default function AdminAssignments() {
                       <input
                         type="checkbox"
                         onChange={toggleAll}
-                        checked={selectedApps.length === filteredApps.length}
+                        checked={filteredApps.length > 0 && selectedApps.length === filteredApps.length}
                       />
                     </th>
                     <th className="p-4 text-left font-medium">Name</th>
@@ -178,12 +180,19 @@ export default function AdminAssignments() {
                 </thead>
                 <tbody>
                   {filteredApps.map((app) => (
-                    <tr key={app.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                    <tr
+                      key={app.id}
+                      onClick={() => toggleApp(app.id)}
+                      className={`border-b border-gray-200 transition cursor-pointer ${
+                        selectedApps.includes(app.id) ? "bg-blue-50" : "hover:bg-gray-50"
+                      }`}
+                    >
                       <td className="p-4 text-sm text-gray-700">
                         <input
                           type="checkbox"
                           checked={selectedApps.includes(app.id)}
                           onChange={() => toggleApp(app.id)}
+                          onClick={(event) => event.stopPropagation()}
                         />
                       </td>
                       <td className="p-4 text-sm text-gray-700">{app.name}</td>
@@ -212,34 +221,42 @@ export default function AdminAssignments() {
                 </tbody>
               </table>
             </div>
-
-            {selectedApps.length > 0 && (
-              <div className="flex flex-col sm:flex-row gap-2 items-center">
-                <select
-                  value={selectedVerifier}
-                  onChange={(e) => setSelectedVerifier(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
-                >
-                  <option value="">Select Verifier</option>
-                  {verifiers.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.name || v.email}
-                    </option>
-                  ))}
-                </select>
-
-                <button
-                  onClick={handleAssign}
-                  disabled={assigning}
-                  className="bg-blue-900 text-white hover:bg-blue-800 px-4 py-2 rounded-md text-sm font-medium transition"
-                >
-                  {assigning ? "Assigning..." : "Assign"}
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {selectedApps.length > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-1.5rem)] md:w-[min(1024px,calc(100%-4rem))]">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-3 md:p-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+              <div className="text-xs md:text-sm text-gray-700 font-medium whitespace-nowrap">
+                {selectedApps.length} selected
+              </div>
+
+              <select
+                value={selectedVerifier}
+                onChange={(e) => setSelectedVerifier(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
+              >
+                <option value="">Select Verifier</option>
+                {verifiers.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name || v.email}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                onClick={handleAssign}
+                disabled={assigning}
+                className="bg-blue-900 text-white hover:bg-blue-800 px-4 py-2 rounded-md text-sm font-medium transition disabled:opacity-60"
+              >
+                {assigning ? "Assigning..." : "Assign"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
