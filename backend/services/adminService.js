@@ -1,10 +1,11 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { withLegacyBranchAllotted } = require('../utils/branchMapping');
+const { getLatestDocumentsByType } = require('../utils/documentLatest');
 
 // 1. Get all applications
 const getAllApplications = async () => {
-  return prisma.studentProfile.findMany({
+  const applications = await prisma.studentProfile.findMany({
     include: {
       user: {
         select: {
@@ -17,6 +18,8 @@ const getAllApplications = async () => {
           id: true,
           documentType: true,
           status: true,
+          uploadedAt: true,
+          version: true,
         },
       },
       branch: true,
@@ -34,6 +37,11 @@ const getAllApplications = async () => {
       createdAt: 'desc',
     },
   });
+
+  return applications.map((application) => ({
+    ...application,
+    documents: getLatestDocumentsByType(application.documents || []),
+  }));
 };
 
 // 2. Get single application
@@ -49,7 +57,9 @@ const getApplicationById = async (id) => {
       },
       branch: true,
       batch: true,
-      documents: true,
+      documents: {
+        orderBy: { uploadedAt: 'desc' },
+      },
     },
   });
 
@@ -57,7 +67,10 @@ const getApplicationById = async (id) => {
     throw new Error('Application Not Found');
   }
 
-  return application;
+  return {
+    ...application,
+    documents: getLatestDocumentsByType(application.documents || []),
+  };
 };
 
 // 3. Get applications with assignment info

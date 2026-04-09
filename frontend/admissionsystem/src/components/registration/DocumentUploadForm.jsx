@@ -1,7 +1,13 @@
 import { useState } from "react";
 import API from "../../api/axios";
 
-export function DocumentUploadForm({ onBack, onSubmit, isPwd }) {
+export function DocumentUploadForm({
+  onBack,
+  onSubmit,
+  isPwd,
+  casteCategory,
+  existingDocuments = [],
+}) {
 
   const [files, setFiles] = useState({});
   const [uploading, setUploading] = useState(false);
@@ -27,6 +33,22 @@ export function DocumentUploadForm({ onBack, onSubmit, isPwd }) {
     ...(isPwd ? [{ key: "PWD_CERTIFICATE", label: "PWD Certificate" }] : []),
   ];
 
+  const requiredDocumentKeys = [
+    "PASSPORT_PHOTO",
+    "PROVISIONAL_LETTER",
+    "CLASS_10_MARKSHEET",
+    "CLASS_12_MARKSHEET",
+    "JEE_RANK_CARD",
+    "AADHAR_CARD",
+    ...(casteCategory && casteCategory !== "GENERAL" ? ["CASTE_CERTIFICATE"] : []),
+    ...(isPwd ? ["PWD_CERTIFICATE"] : []),
+  ];
+
+  const documentLabelMap = documentFields.reduce((acc, doc) => {
+    acc[doc.key] = doc.label;
+    return acc;
+  }, {});
+
   // 🔥 S3 UPLOAD
   const uploadFile = async (file) => {
     const formData = new FormData();
@@ -51,8 +73,19 @@ export function DocumentUploadForm({ onBack, onSubmit, isPwd }) {
     const uploadedUrls = {};
 
     try {
-      if (Object.keys(files).length === 0) {
-        throw new Error("Please select at least one document to upload");
+      const existingDocumentKeys = new Set(
+        (existingDocuments || []).map((doc) => doc.documentType)
+      );
+
+      const missingDocs = requiredDocumentKeys.filter(
+        (docKey) => !files[docKey] && !existingDocumentKeys.has(docKey)
+      );
+
+      if (missingDocs.length > 0) {
+        const missingLabels = missingDocs.map((docKey) => documentLabelMap[docKey] || docKey);
+        throw new Error(
+          `Please upload all required documents before submitting. Missing: ${missingLabels.join(", ")}`
+        );
       }
 
       for (const key of Object.keys(files)) {

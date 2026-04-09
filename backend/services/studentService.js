@@ -4,6 +4,7 @@ const {
   getBranchIdFromCode,
   withLegacyBranchAllotted,
 } = require('../utils/branchMapping');
+const { getLatestDocumentsByType } = require('../utils/documentLatest');
 
 const toOptionalInt = (value) => {
   if (value === undefined || value === null || value === '') return null;
@@ -24,7 +25,7 @@ const getStudentProfile = async (userId) => {
     branch: true,
     batch: true,
     documents: {
-      orderBy: { documentType: 'asc' },
+      orderBy: { uploadedAt: 'desc' },
     },
   };
 
@@ -66,7 +67,10 @@ const getStudentProfile = async (userId) => {
     });
   }
 
-  return withLegacyBranchAllotted(profile);
+  return withLegacyBranchAllotted({
+    ...profile,
+    documents: getLatestDocumentsByType(profile.documents || []),
+  });
 };
 
 const getStudentRemarks = async (userId) => {
@@ -216,30 +220,9 @@ const submitApplication = async (userId, data) => {
           },
         });
 
-    const latestVersions = new Map();
-
-    if (existingProfile?.documents?.length) {
-      existingProfile.documents.forEach((doc) => {
-        const current = latestVersions.get(doc.documentType) || 0;
-        if (doc.version > current) {
-          latestVersions.set(doc.documentType, doc.version);
-        }
-      });
-    }
-
     const documentEntries = Object.entries(data.documentUrls || {});
 
-    if (existingProfile && documentEntries.length > 0) {
-      await tx.document.updateMany({
-        where: {
-          studentProfileId: existingProfile.id,
-          documentType: { in: documentEntries.map(([docType]) => docType) },
-        },
-        data: { status: 'SUPERSEDED' },
-      });
-    }
-
-    const documentPromises = documentEntries.map(([docType, fileUrl]) => {
+    const documentPromises = documentEntries.map(async ([docType, fileUrl]) => {
       const rawName = fileUrl.split('/').pop() || 'unknown';
       let decodedName = rawName;
       try {
@@ -248,7 +231,12 @@ const submitApplication = async (userId, data) => {
         decodedName = rawName;
       }
 
-      const nextVersion = (latestVersions.get(docType) || 0) + 1;
+      await tx.document.deleteMany({
+        where: {
+          studentProfileId: profile.id,
+          documentType: docType,
+        },
+      });
 
       return tx.document.create({
         data: {
@@ -257,7 +245,7 @@ const submitApplication = async (userId, data) => {
           fileUrl,
           fileName: decodedName,
           status: 'PENDING',
-          version: nextVersion,
+          version: 1,
         },
       });
     });

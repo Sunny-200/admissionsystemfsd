@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { withLegacyBranchAllotted } = require('../utils/branchMapping');
+const { getLatestDocumentsByType } = require('../utils/documentLatest');
 
 // 1. Get assigned applications
 const getAssignments = async (verifierId) => {
@@ -57,7 +58,7 @@ const getApplicationById = async (id, verifierId) => {
       user: { select: { email: true } },
       branch: true,
       batch: true,
-      documents: { orderBy: { uploadedAt: 'asc' } },
+      documents: { orderBy: { uploadedAt: 'desc' } },
       assignments: {
         include: {
           verifier: { select: { name: true, email: true } },
@@ -71,7 +72,10 @@ const getApplicationById = async (id, verifierId) => {
 
   if (!application) throw new Error('NOT_FOUND');
 
-  return withLegacyBranchAllotted(application);
+  return withLegacyBranchAllotted({
+    ...application,
+    documents: getLatestDocumentsByType(application.documents || []),
+  });
 };
 
 // 4. Get remarks

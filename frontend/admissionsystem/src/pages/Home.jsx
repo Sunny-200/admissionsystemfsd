@@ -26,8 +26,8 @@ export default function Home() {
   const subtitleClasses = "text-gray-600 text-sm md:text-base max-w-2xl mx-auto";
   const primaryButtonClasses =
     "bg-blue-900 text-white hover:bg-blue-800 rounded-md px-6 py-2.5 text-sm font-medium transition shadow-sm";
-  const outlineButtonClasses =
-    "border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white rounded-md px-6 py-2.5 text-sm font-medium transition";
+  // const outlineButtonClasses =
+  //   "border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white rounded-md px-6 py-2.5 text-sm font-medium transition";
 
   return (
     <div className={pageClasses}>
@@ -66,11 +66,8 @@ export default function Home() {
           <Link to="/login" className={primaryButtonClasses}>
             Login
           </Link>
-          <Link to="/signup" className={outlineButtonClasses}>
+          <Link to="/signup" className={primaryButtonClasses}>
             Signup
-          </Link>
-          <Link to="/dashboard" className={primaryButtonClasses}>
-            Dashboard
           </Link>
         </div>
       </div>
