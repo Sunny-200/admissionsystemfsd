@@ -35,11 +35,6 @@ export default function VerifierApplicationDetail() {
     application?.batch?.label ||
     application?.batch?.year ||
     "-";
-  const documentStatusClasses = {
-    PENDING: "bg-yellow-100 text-yellow-800 border border-yellow-200",
-    APPROVED: "bg-green-100 text-green-800 border border-green-200",
-    REJECTED: "bg-red-100 text-red-800 border border-red-200",
-  };
 
   // 🔐 auth protect
   useEffect(() => {
@@ -376,21 +371,15 @@ export default function VerifierApplicationDetail() {
                       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div className="space-y-1">
                           <p className="text-sm font-medium text-gray-800">{formatStatus(doc.documentType)}</p>
-                          <span
-                            className={`text-xs font-semibold px-2.5 py-1 rounded-full inline-flex w-fit ${
-                              documentStatusClasses[doc.status] ||
-                              "bg-gray-100 text-gray-700 border border-gray-200"
-                            }`}
-                          >
-                            {formatStatus(doc.status) || "Pending"}
-                          </span>
                         </div>
-                        <button
-                          onClick={() => handleViewDocument(doc)}
-                          className="border border-blue-200 bg-white text-blue-900 hover:bg-blue-900 hover:border-blue-900 hover:text-white rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors duration-200"
-                        >
-                          Download
-                        </button>
+                        <div className="flex items-center justify-end h-full">
+                          <button
+                            onClick={() => handleViewDocument(doc)}
+                            className="border border-blue-200 bg-white text-blue-900 hover:bg-blue-900 hover:border-blue-900 hover:text-white rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors duration-200"
+                          >
+                            Download
+                          </button>
+                        </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">

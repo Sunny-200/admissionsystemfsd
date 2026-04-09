@@ -23,11 +23,6 @@ export default function ApplicationDetail({ applicationId }) {
     application?.batch?.label ||
     application?.batch?.year ||
     "-";
-  const documentStatusClasses = {
-    PENDING: "bg-yellow-100 text-yellow-800 border border-yellow-200",
-    APPROVED: "bg-green-100 text-green-800 border border-green-200",
-    REJECTED: "bg-red-100 text-red-800 border border-red-200",
-  };
 
   useEffect(() => {
     const fetchApplication = async () => {
@@ -299,14 +294,6 @@ export default function ApplicationDetail({ applicationId }) {
                 >
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-gray-800">{formatStatus(doc.documentType)}</p>
-                    <span
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-full inline-flex w-fit ${
-                        documentStatusClasses[doc.status] ||
-                        "bg-gray-100 text-gray-700 border border-gray-200"
-                      }`}
-                    >
-                      {formatStatus(doc.status) || "Pending"}
-                    </span>
                   </div>
                   <button
                     onClick={() => handleViewDocument(doc)}

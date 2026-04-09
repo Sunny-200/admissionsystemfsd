@@ -37,10 +37,61 @@ export default function Dashboard() {
     CONFIRMED: "bg-emerald-100 text-emerald-800 border border-emerald-200",
     REJECTED: "bg-red-100 text-red-800 border border-red-200",
   };
-  const documentStatusClasses = {
-    PENDING: "bg-yellow-100 text-yellow-800 border border-yellow-200",
-    APPROVED: "bg-green-100 text-green-800 border border-green-200",
-    REJECTED: "bg-red-100 text-red-800 border border-red-200",
+
+  const extractRemarkSections = (remarkTextValue) => {
+    const rawText = String(remarkTextValue || "").trim();
+    const marker = "Rejected Documents:";
+    const markerIndex = rawText.indexOf(marker);
+
+    if (markerIndex === -1) {
+      return {
+        remarkText: rawText || "-",
+        rejectedDocs: [],
+      };
+    }
+
+    const mainRemarkText = rawText.slice(0, markerIndex).trim();
+    const rejectedRaw = rawText.slice(markerIndex + marker.length).trim();
+
+    if (!rejectedRaw) {
+      return {
+        remarkText: mainRemarkText || "-",
+        rejectedDocs: [],
+      };
+    }
+
+    const patternMatches = Array.from(
+      rejectedRaw.matchAll(/([A-Z0-9_]+)\s*\(Reason:\s*([^)]+)\)/gi)
+    );
+
+    const rejectedDocs = patternMatches.length > 0
+      ? patternMatches.map((match) => ({
+          type: String(match[1] || "").trim(),
+          reason: String(match[2] || "").trim(),
+        }))
+      : rejectedRaw
+          .split(/[,;\n]+/)
+          .map((entry) => entry.trim())
+          .filter(Boolean)
+          .map((entry) => {
+            const reasonMatch = entry.match(/(.+?)\s*\(Reason:\s*([^)]+)\)/i);
+            if (reasonMatch) {
+              return {
+                type: String(reasonMatch[1] || "").replace(/^[-•]\s*/, "").trim(),
+                reason: String(reasonMatch[2] || "").trim(),
+              };
+            }
+
+            return {
+              type: entry.replace(/^[-•]\s*/, "").trim(),
+              reason: "",
+            };
+          });
+
+    return {
+      remarkText: mainRemarkText || "-",
+      rejectedDocs,
+    };
   };
 
   // 🔐 Redirect based on role
@@ -359,14 +410,6 @@ export default function Dashboard() {
                   >
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-gray-800">{formatStatus(doc.documentType)}</p>
-                      <span
-                        className={`text-xs font-semibold px-2.5 py-1 rounded-full inline-flex w-fit ${
-                          documentStatusClasses[doc.status] ||
-                          "bg-gray-100 text-gray-700 border border-gray-200"
-                        }`}
-                      >
-                        {formatStatus(doc.status) || "Pending"}
-                      </span>
                       {doc.status === "REJECTED" && (
                         <p className="text-xs text-red-600 mt-1">
                           Reason: {doc.rejectionReason || "No reason provided"}
@@ -398,12 +441,32 @@ export default function Dashboard() {
                   <p className="text-sm text-app-muted">No remarks yet.</p>
                 )}
                 {remarks.map((r) => (
-                  <div key={r.id} className="rounded-xl border border-app-border bg-white/80 p-4">
-                    <p className="text-sm text-gray-700">{r.text}</p>
-                    <p className="text-xs text-app-muted mt-2">
-                      {r.author.name} · {new Date(r.createdAt).toLocaleString()}
-                    </p>
-                  </div>
+                  (() => {
+                    const { remarkText, rejectedDocs } = extractRemarkSections(r.text);
+
+                    return (
+                      <div key={r.id} className="rounded-xl border border-app-border bg-white/80 p-4 space-y-2">
+                        <p className="text-sm text-app-primary font-medium">{remarkText}</p>
+
+                        {rejectedDocs.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs text-red-600 font-semibold">Rejected Documents:</p>
+                            <ul className="mt-1 space-y-1">
+                              {rejectedDocs.map((doc, index) => (
+                                <li key={`${r.id}-${doc.type}-${index}`} className="text-xs text-red-500">
+                                  • {doc.type} (Reason: {doc.reason || "No reason provided"})
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <p className="text-xs text-app-muted mt-3">
+                          {r.author?.name || "Verifier"} · {new Date(r.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                    );
+                  })()
                 ))}
               </div>
             </div>
