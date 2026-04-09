@@ -207,8 +207,31 @@ const getVerifiers = async () => {
   });
 };
 
-// 6. Branch-wise intake vs admitted stats
-const getBranchStats = async () => {
+// 5b. Get all batches for admin statistics filters
+const getBatches = async () => {
+  const rows = await prisma.batch.findMany({
+    select: {
+      code: true,
+      startYear: true,
+    },
+    orderBy: [{ startYear: 'desc' }, { code: 'desc' }],
+  });
+
+  const years = Array.from(
+    new Set(
+      rows
+        .map((row) => {
+          const candidate = row.startYear || Number(row.code);
+          return Number.isFinite(candidate) ? String(candidate) : null;
+        })
+        .filter(Boolean)
+    )
+  );
+
+  return years.map((year) => ({ year }));
+};
+
+const getDefaultStatsBatchId = async () => {
   const currentYear = new Date().getFullYear();
 
   const activeBatch =
@@ -225,6 +248,36 @@ const getBranchStats = async () => {
       select: { id: true },
     }));
 
+  return activeBatch?.id || null;
+};
+
+const resolveStatsBatchId = async (batchValue) => {
+  const normalized = String(batchValue || '').trim();
+
+  if (!normalized) {
+    return getDefaultStatsBatchId();
+  }
+
+  const numericYear = Number(normalized);
+
+  const explicitBatch = await prisma.batch.findFirst({
+    where: {
+      OR: [
+        { code: normalized },
+        ...(Number.isFinite(numericYear) ? [{ startYear: numericYear }] : []),
+      ],
+    },
+    orderBy: [{ isActive: 'desc' }, { startYear: 'desc' }, { createdAt: 'desc' }],
+    select: { id: true },
+  });
+
+  return explicitBatch?.id || null;
+};
+
+// 6. Branch-wise intake vs admitted stats
+const getBranchStats = async (batchValue) => {
+  const batchId = await resolveStatsBatchId(batchValue);
+
   const branches = await prisma.branch.findMany({
     where: { isActive: true },
     select: {
@@ -235,9 +288,9 @@ const getBranchStats = async () => {
     orderBy: { code: 'asc' },
   });
 
-  const intakeRows = activeBatch
+  const intakeRows = batchId
     ? await prisma.branchIntake.findMany({
-        where: { batchId: activeBatch.id },
+        where: { batchId },
         select: {
           branchId: true,
           intake: true,
@@ -256,7 +309,7 @@ const getBranchStats = async () => {
       applicationStatus: {
         notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
       },
-      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+      ...(batchId ? { batchId } : {}),
     },
     select: {
       branchId: true,
@@ -298,22 +351,8 @@ const getBranchStats = async () => {
 };
 
 // 7. Branch-wise gender distribution stats
-const getGenderStats = async () => {
-  const currentYear = new Date().getFullYear();
-
-  const activeBatch =
-    (await prisma.batch.findFirst({
-      where: { isActive: true },
-      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
-      select: { id: true },
-    })) ||
-    (await prisma.batch.findFirst({
-      where: {
-        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true },
-    }));
+const getGenderStats = async (batchValue) => {
+  const batchId = await resolveStatsBatchId(batchValue);
 
   const branches = await prisma.branch.findMany({
     where: { isActive: true },
@@ -334,7 +373,7 @@ const getGenderStats = async () => {
       applicationStatus: {
         notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
       },
-      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+      ...(batchId ? { batchId } : {}),
     },
     select: {
       branchId: true,
@@ -376,29 +415,15 @@ const getGenderStats = async () => {
 };
 
 // 8. PWD vs Non-PWD distribution stats
-const getPwdStats = async () => {
-  const currentYear = new Date().getFullYear();
-
-  const activeBatch =
-    (await prisma.batch.findFirst({
-      where: { isActive: true },
-      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
-      select: { id: true },
-    })) ||
-    (await prisma.batch.findFirst({
-      where: {
-        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true },
-    }));
+const getPwdStats = async (batchValue) => {
+  const batchId = await resolveStatsBatchId(batchValue);
 
   const admittedProfiles = await prisma.studentProfile.findMany({
     where: {
       applicationStatus: {
         notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
       },
-      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+      ...(batchId ? { batchId } : {}),
     },
     select: {
       isPwd: true,
@@ -428,29 +453,15 @@ const getPwdStats = async () => {
 };
 
 // 9. State-wise gender and total distribution stats
-const getStateStats = async () => {
-  const currentYear = new Date().getFullYear();
-
-  const activeBatch =
-    (await prisma.batch.findFirst({
-      where: { isActive: true },
-      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
-      select: { id: true },
-    })) ||
-    (await prisma.batch.findFirst({
-      where: {
-        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true },
-    }));
+const getStateStats = async (batchValue) => {
+  const batchId = await resolveStatsBatchId(batchValue);
 
   const admittedProfiles = await prisma.studentProfile.findMany({
     where: {
       applicationStatus: {
         notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
       },
-      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+      ...(batchId ? { batchId } : {}),
     },
     select: {
       state: true,
@@ -486,29 +497,15 @@ const getStateStats = async () => {
 };
 
 // 10. Category-wise gender and total distribution stats
-const getCategoryStats = async () => {
-  const currentYear = new Date().getFullYear();
-
-  const activeBatch =
-    (await prisma.batch.findFirst({
-      where: { isActive: true },
-      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
-      select: { id: true },
-    })) ||
-    (await prisma.batch.findFirst({
-      where: {
-        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true },
-    }));
+const getCategoryStats = async (batchValue) => {
+  const batchId = await resolveStatsBatchId(batchValue);
 
   const admittedProfiles = await prisma.studentProfile.findMany({
     where: {
       applicationStatus: {
         notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
       },
-      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+      ...(batchId ? { batchId } : {}),
     },
     select: {
       casteCategory: true,
@@ -547,22 +544,8 @@ const getCategoryStats = async () => {
 };
 
 // 11. Opening vs Closing rank range by branch and category
-const getRankRangeStats = async () => {
-  const currentYear = new Date().getFullYear();
-
-  const activeBatch =
-    (await prisma.batch.findFirst({
-      where: { isActive: true },
-      orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
-      select: { id: true },
-    })) ||
-    (await prisma.batch.findFirst({
-      where: {
-        OR: [{ startYear: currentYear }, { code: String(currentYear) }],
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true },
-    }));
+const getRankRangeStats = async (batchValue) => {
+  const batchId = await resolveStatsBatchId(batchValue);
 
   const branches = await prisma.branch.findMany({
     where: { isActive: true },
@@ -579,7 +562,7 @@ const getRankRangeStats = async () => {
       applicationStatus: {
         notIn: ['REJECTED', 'DOCUMENTS_REJECTED'],
       },
-      ...(activeBatch ? { batchId: activeBatch.id } : {}),
+      ...(batchId ? { batchId } : {}),
     },
     select: {
       branchId: true,
@@ -646,6 +629,7 @@ module.exports = {
   getApplicationsWithAssignments,
   bulkAssign,
   getVerifiers,
+  getBatches,
   getBranchStats,
   getGenderStats,
   getPwdStats,

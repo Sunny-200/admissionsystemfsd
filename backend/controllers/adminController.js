@@ -103,10 +103,26 @@ const getVerifiers = async (req, res) => {
   }
 };
 
+// Returns available batches for admin filters
+const getBatches = async (req, res) => {
+  try {
+    const data = await adminService.getBatches();
+    res.json({
+      success: true,
+      data: { batches: data },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 // Returns branch-wise stats for admin dashboards
 const getBranchStats = async (req, res) => {
   try {
-    const data = await adminService.getBranchStats();
+    const data = await adminService.getBranchStats(req.query.batch);
     res.json({
       success: true,
       data: { stats: data },
@@ -122,7 +138,7 @@ const getBranchStats = async (req, res) => {
 // Returns branch-wise gender stats for admin dashboards
 const getGenderStats = async (req, res) => {
   try {
-    const data = await adminService.getGenderStats();
+    const data = await adminService.getGenderStats(req.query.batch);
     res.json({
       success: true,
       data: { stats: data },
@@ -138,7 +154,7 @@ const getGenderStats = async (req, res) => {
 // Returns PWD vs non-PWD stats for admin dashboards
 const getPwdStats = async (req, res) => {
   try {
-    const data = await adminService.getPwdStats();
+    const data = await adminService.getPwdStats(req.query.batch);
     res.json({
       success: true,
       data,
@@ -154,7 +170,7 @@ const getPwdStats = async (req, res) => {
 // Returns state-wise stats for admin dashboards
 const getStateStats = async (req, res) => {
   try {
-    const data = await adminService.getStateStats();
+    const data = await adminService.getStateStats(req.query.batch);
     res.json({
       success: true,
       data: { stats: data },
@@ -170,7 +186,7 @@ const getStateStats = async (req, res) => {
 // Returns category-wise stats for admin dashboards
 const getCategoryStats = async (req, res) => {
   try {
-    const data = await adminService.getCategoryStats();
+    const data = await adminService.getCategoryStats(req.query.batch);
     res.json({
       success: true,
       data: { stats: data },
@@ -186,7 +202,7 @@ const getCategoryStats = async (req, res) => {
 // Returns opening vs closing rank range by branch and category
 const getRankRangeStats = async (req, res) => {
   try {
-    const data = await adminService.getRankRangeStats();
+    const data = await adminService.getRankRangeStats(req.query.batch);
     res.json({
       success: true,
       data: { stats: data },
@@ -204,6 +220,7 @@ module.exports = {
   getApplication,
   getApplicationsWithAssignments,
   bulkAssign,
+  getBatches,
   getVerifiers,
   getBranchStats,
   getGenderStats,

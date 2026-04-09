@@ -257,6 +257,10 @@ const parsePwdStats = (payload) => {
 export default function AdminStatistics() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const currentYear = new Date().getFullYear();
+  const [selectedBatch, setSelectedBatch] = useState(currentYear.toString());
+  const [batches, setBatches] = useState([{ year: currentYear.toString() }]);
+  const [pendingBatchRequests, setPendingBatchRequests] = useState(0);
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -279,6 +283,15 @@ export default function AdminStatistics() {
   });
   const [pwdLoading, setPwdLoading] = useState(true);
   const [pwdError, setPwdError] = useState("");
+  const isBatchSwitching = pendingBatchRequests > 0;
+
+  const beginBatchRequest = () => {
+    setPendingBatchRequests((count) => count + 1);
+  };
+
+  const endBatchRequest = () => {
+    setPendingBatchRequests((count) => Math.max(count - 1, 0));
+  };
 
   useEffect(() => {
     if (!user) {
@@ -294,12 +307,71 @@ export default function AdminStatistics() {
   useEffect(() => {
     let cancelled = false;
 
+    const loadBatches = async () => {
+      try {
+        const response = await API.get("/admin/batches");
+        const payload = response?.data;
+
+        const rawRows = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : Array.isArray(payload?.data?.batches)
+              ? payload.data.batches
+              : Array.isArray(payload?.batches)
+                ? payload.batches
+                : [];
+
+        if (cancelled) return;
+
+        const normalizedYears = Array.from(
+          new Set(
+            rawRows
+              .map((row) => String(row?.year || row?.startYear || row?.code || "").trim())
+              .filter(Boolean)
+          )
+        )
+          .sort((left, right) => Number(right) - Number(left))
+          .map((year) => ({ year }));
+
+        if (normalizedYears.length > 0) {
+          setBatches(normalizedYears);
+
+          const hasCurrentSelection = normalizedYears.some(
+            (batch) => batch.year === selectedBatch
+          );
+          if (!hasCurrentSelection) {
+            setSelectedBatch(normalizedYears[0].year);
+          }
+        } else {
+          setBatches([{ year: selectedBatch }]);
+        }
+      } catch {
+        if (!cancelled) {
+          setBatches([{ year: selectedBatch }]);
+        }
+      }
+    };
+
+    loadBatches();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedBatch]);
+
+  useEffect(() => {
+    let cancelled = false;
+
     const loadStats = async () => {
       try {
         setLoading(true);
         setError("");
+        beginBatchRequest();
 
-        const response = await API.get("/admin/stats/branch");
+        const response = await API.get("/admin/stats/branch", {
+          params: { batch: selectedBatch },
+        });
         const rows = parseStatsRows(response?.data);
 
         if (cancelled) return;
@@ -331,6 +403,7 @@ export default function AdminStatistics() {
         if (!cancelled) {
           setLoading(false);
         }
+        endBatchRequest();
       }
     };
 
@@ -339,7 +412,7 @@ export default function AdminStatistics() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedBatch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -348,8 +421,11 @@ export default function AdminStatistics() {
       try {
         setCategoryLoading(true);
         setCategoryError("");
+        beginBatchRequest();
 
-        const response = await API.get("/admin/stats/category");
+        const response = await API.get("/admin/stats/category", {
+          params: { batch: selectedBatch },
+        });
         const rows = parseStatsRows(response?.data);
 
         if (cancelled) return;
@@ -390,6 +466,7 @@ export default function AdminStatistics() {
         if (!cancelled) {
           setCategoryLoading(false);
         }
+        endBatchRequest();
       }
     };
 
@@ -398,7 +475,7 @@ export default function AdminStatistics() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedBatch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -407,8 +484,11 @@ export default function AdminStatistics() {
       try {
         setRankRangeLoading(true);
         setRankRangeError("");
+        beginBatchRequest();
 
-        const response = await API.get("/admin/stats/rank-range");
+        const response = await API.get("/admin/stats/rank-range", {
+          params: { batch: selectedBatch },
+        });
         const rows = parseStatsRows(response?.data);
 
         if (cancelled) return;
@@ -479,6 +559,7 @@ export default function AdminStatistics() {
         if (!cancelled) {
           setRankRangeLoading(false);
         }
+        endBatchRequest();
       }
     };
 
@@ -487,7 +568,7 @@ export default function AdminStatistics() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedBatch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -496,8 +577,11 @@ export default function AdminStatistics() {
       try {
         setPwdLoading(true);
         setPwdError("");
+        beginBatchRequest();
 
-        const response = await API.get("/admin/stats/pwd");
+        const response = await API.get("/admin/stats/pwd", {
+          params: { batch: selectedBatch },
+        });
         const normalized = parsePwdStats(response?.data);
 
         if (cancelled) return;
@@ -515,6 +599,7 @@ export default function AdminStatistics() {
         if (!cancelled) {
           setPwdLoading(false);
         }
+        endBatchRequest();
       }
     };
 
@@ -523,7 +608,7 @@ export default function AdminStatistics() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedBatch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -532,8 +617,11 @@ export default function AdminStatistics() {
       try {
         setStateLoading(true);
         setStateError("");
+        beginBatchRequest();
 
-        const response = await API.get("/admin/stats/state");
+        const response = await API.get("/admin/stats/state", {
+          params: { batch: selectedBatch },
+        });
         const rows = parseStatsRows(response?.data);
 
         if (cancelled) return;
@@ -568,6 +656,7 @@ export default function AdminStatistics() {
         if (!cancelled) {
           setStateLoading(false);
         }
+        endBatchRequest();
       }
     };
 
@@ -576,7 +665,7 @@ export default function AdminStatistics() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedBatch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -585,8 +674,11 @@ export default function AdminStatistics() {
       try {
         setGenderLoading(true);
         setGenderError("");
+        beginBatchRequest();
 
-        const response = await API.get("/admin/stats/gender");
+        const response = await API.get("/admin/stats/gender", {
+          params: { batch: selectedBatch },
+        });
         const rows = parseStatsRows(response?.data);
 
         if (cancelled) return;
@@ -614,6 +706,7 @@ export default function AdminStatistics() {
         if (!cancelled) {
           setGenderLoading(false);
         }
+        endBatchRequest();
       }
     };
 
@@ -622,7 +715,7 @@ export default function AdminStatistics() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedBatch]);
 
   const chartData = useMemo(() => stats, [stats]);
   const genderChartData = useMemo(() => genderStats, [genderStats]);
@@ -693,14 +786,39 @@ export default function AdminStatistics() {
           <div>
             <h1 className="text-2xl md:text-3xl font-semibold text-app-primary">Admin Statistics</h1>
             <p className="text-sm text-app-muted mt-1">Branch-wise admission capacity overview</p>
+            <p className="text-xs text-app-muted mt-1">Viewing Batch {selectedBatch}</p>
           </div>
-          <button
-            onClick={() => navigate("/admin")}
-            className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white rounded-md px-4 py-2 text-sm font-medium"
-          >
-            Back
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <label htmlFor="batch-selector" className="text-xs font-medium text-app-muted">
+                Batch
+              </label>
+              <select
+                id="batch-selector"
+                value={selectedBatch}
+                onChange={(event) => setSelectedBatch(event.target.value)}
+                disabled={isBatchSwitching}
+                className="h-9 w-40 rounded-md border border-app-border bg-white px-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:opacity-60"
+              >
+                {batches.map((batch) => (
+                  <option key={batch.year} value={batch.year}>
+                    {batch.year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={() => navigate("/admin")}
+              className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white rounded-md px-4 py-2 text-sm font-medium"
+            >
+              Back
+            </button>
+          </div>
         </div>
+
+        {isBatchSwitching && (
+          <div className="text-xs text-app-muted -mt-3">Updating statistics for batch {selectedBatch}...</div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-app-card border border-app-border rounded-xl shadow-sm p-6">
