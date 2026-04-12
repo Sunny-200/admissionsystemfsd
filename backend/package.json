@@ -4,9 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "normalize:document-filenames": "node ./scripts/normalizeDocumentFileNames.js",
-    "seed:branch-batch": "node ./scripts/seedBranchBatchData.js",
-    "backfill:student-branch-batch": "node ./scripts/backfillStudentBranchBatch.js"
+    "create:admin": "node ./scripts/createAdminUser.js",
+    "create:verifier": "node ./scripts/createVerifierUser.js"
   },
   "keywords": [],
   "author": "",
