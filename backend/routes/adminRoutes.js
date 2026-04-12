@@ -15,6 +15,8 @@ router.get('/stats/state', adminController.getStateStats);
 router.get('/stats/category', adminController.getCategoryStats);
 router.get('/stats/rank-range', adminController.getRankRangeStats);
 router.get('/batches', adminController.getBatches);
+router.get('/intake', adminController.getIntake);
+router.post('/intake', adminController.saveIntake);
 
 router.get('/applications', adminController.getApplications);
 router.get('/applications/with-assignments', adminController.getApplicationsWithAssignments);

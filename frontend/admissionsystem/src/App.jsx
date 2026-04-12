@@ -11,6 +11,7 @@ import AdminAssignments from "./pages/AdminAssignments";
 import AdminApplicationDetail from "./pages/AdminApplicationDetail";
 import ApplicationDetailWrapper from "./pages/admin/ApplicationDetailWrapper";
 import AdminStatistics from "./pages/admin/AdminStatistics";
+import AdminIntake from "./pages/admin/AdminIntake";
 import VerifierDashboard from "./pages/VerifierDashboard";
 import VerifierApplicationDetail from "./pages/VerifierApplicationDetail";
 
@@ -79,6 +80,15 @@ function App() {
           element={
             <ProtectedRoute role="ADMIN">
               <AdminStatistics />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/intake"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <AdminIntake />
             </ProtectedRoute>
           }
         />

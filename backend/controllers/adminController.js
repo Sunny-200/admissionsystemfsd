@@ -215,6 +215,46 @@ const getRankRangeStats = async (req, res) => {
   }
 };
 
+const parseIntakePayload = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.entries)) return payload.entries;
+  if (Array.isArray(payload?.intake)) return payload.intake;
+  return [];
+};
+
+// Returns intake rows for intake management UI
+const getIntake = async (req, res) => {
+  try {
+    const data = await adminService.getIntakeRows(req.query.batch);
+    res.json({
+      success: true,
+      data: { intake: data },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// Saves intake rows from intake management UI
+const saveIntake = async (req, res) => {
+  try {
+    const entries = parseIntakePayload(req.body);
+    const result = await adminService.saveIntakeRows(entries);
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 module.exports = {
   getApplications,
   getApplication,
@@ -228,4 +268,6 @@ module.exports = {
   getStateStats,
   getCategoryStats,
   getRankRangeStats,
+  getIntake,
+  saveIntake,
 };

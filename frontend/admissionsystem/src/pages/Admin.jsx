@@ -34,6 +34,13 @@ export default function AdminPage() {
 
           <div className="flex gap-3 flex-col sm:flex-row">
             <button
+              onClick={() => navigate("/admin/intake")}
+              className="bg-[#1e3a8a] text-white hover:bg-[#172554] rounded-md px-4 py-2 text-sm font-medium"
+            >
+              Manage Intake
+            </button>
+
+            <button
               onClick={() => navigate("/admin/assignments")}
               className="bg-blue-900 text-white hover:bg-blue-800 rounded-md px-4 py-2 text-sm font-medium transition"
             >

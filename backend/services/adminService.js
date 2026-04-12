@@ -231,6 +231,123 @@ const getBatches = async () => {
   return years.map((year) => ({ year }));
 };
 
+// 5c. Get intake rows for admin intake management UI
+const getIntakeRows = async (batchYearInput) => {
+  const branches = await prisma.branch.findMany({
+    where: { isActive: true },
+    select: { id: true, code: true },
+    orderBy: [{ code: 'asc' }],
+  });
+
+  const parsedBatchYear = Number(batchYearInput);
+  const hasBatchFilter = Number.isFinite(parsedBatchYear) && parsedBatchYear > 0;
+
+  const targetBatch = hasBatchFilter
+    ? await prisma.batch.findFirst({
+        where: {
+          OR: [{ startYear: parsedBatchYear }, { code: String(parsedBatchYear) }],
+        },
+        orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }],
+        select: {
+          id: true,
+          startYear: true,
+          code: true,
+        },
+      })
+    : await prisma.batch.findFirst({
+        where: { isActive: true },
+        orderBy: [{ startYear: 'desc' }, { createdAt: 'desc' }],
+        select: {
+          id: true,
+          startYear: true,
+          code: true,
+        },
+      });
+
+  if (!targetBatch) {
+    return [];
+  }
+
+  const intakeRows = await prisma.branchIntake.findMany({
+    where: { batchId: targetBatch.id },
+    select: {
+      intake: true,
+      branchId: true,
+    },
+  });
+
+  const intakeByBranchId = new Map(
+    intakeRows.map((row) => [row.branchId, Number(row.intake || 0)])
+  );
+
+  const batchYear = Number(targetBatch.startYear || Number(targetBatch.code || 0));
+
+  return branches.map((branch) => ({
+    batchYear,
+    branch: branch.code,
+    intake: intakeByBranchId.get(branch.id) ?? 0,
+  }));
+};
+
+// 5d. Upsert intake rows from admin intake management UI
+const saveIntakeRows = async (entries) => {
+  if (!Array.isArray(entries)) {
+    throw new Error('Invalid intake payload');
+  }
+
+  return prisma.$transaction(async (tx) => {
+    for (const entry of entries) {
+      const batchYear = Number(entry?.batchYear);
+      const branchCode = String(entry?.branch || '')
+        .trim()
+        .toUpperCase();
+      const intakeValue = Number(entry?.intake || 0);
+
+      if (!Number.isFinite(batchYear) || !branchCode) {
+        continue;
+      }
+
+      const branch = await tx.branch.findFirst({
+        where: {
+          code: branchCode,
+        },
+        select: { id: true },
+      });
+
+      const batch = await tx.batch.findFirst({
+        where: {
+          OR: [{ startYear: batchYear }, { code: String(batchYear) }],
+        },
+        orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }],
+        select: { id: true },
+      });
+
+      if (!branch || !batch) {
+        continue;
+      }
+
+      await tx.branchIntake.upsert({
+        where: {
+          branchId_batchId: {
+            branchId: branch.id,
+            batchId: batch.id,
+          },
+        },
+        update: {
+          intake: intakeValue,
+        },
+        create: {
+          branchId: branch.id,
+          batchId: batch.id,
+          intake: intakeValue,
+        },
+      });
+    }
+
+    return { success: true };
+  });
+};
+
 const getDefaultStatsBatchId = async () => {
   const currentYear = new Date().getFullYear();
 
@@ -630,6 +747,8 @@ module.exports = {
   bulkAssign,
   getVerifiers,
   getBatches,
+  getIntakeRows,
+  saveIntakeRows,
   getBranchStats,
   getGenderStats,
   getPwdStats,

@@ -106,7 +106,7 @@ export function AcademicInfoForm({ form, onSubmit, onBack }) {
           <label className="form-label">Seat Allotment Source</label>
           <select {...form.register("seatAllotmentSource")} className="form-input">
             <option value="">Select Source</option>
-            <option value="JOSSA">JOSSA</option>
+            <option value="JOSSA">JOSAA</option>
             <option value="CSAB">CSAB</option>
           </select>
         </div>
